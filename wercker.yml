@@ -8,12 +8,12 @@ services:
 
 build:
   steps:
-    - virtualenv:
-        name: setup virtual environment
-        install_wheel: false # Enable wheel to speed up builds (experimental)
-
-    - pip-install:
-        zc.buildout
+    - script:
+        name: installing dependensies
+        code: |
+          pip install pip --upgrade
+          pip install setuptools --upgrade
+          pip install zc.buildout
 
     - script:
         name: setup env configuration
