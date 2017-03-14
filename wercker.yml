@@ -11,6 +11,7 @@ build:
     - script:
         name: installing dependensies
         code: |
+          apt-get install -y firefox
           pip install pip --upgrade
           pip install setuptools --upgrade
           pip install zc.buildout
