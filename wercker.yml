@@ -1,0 +1,34 @@
+box: python:3.5
+
+services:
+    - id: postgres
+      env:
+       POSTGRES_PASSWORD: qwerty
+       POSTGRES_USER: enkidulan
+
+build:
+  steps:
+    - virtualenv:
+        name: setup virtual environment
+        install_wheel: false # Enable wheel to speed up builds (experimental)
+
+    - pip-install:
+      zc.buildout
+
+    - script:
+        name: setup env configuration
+        code: |
+          echo "python version $(python --version) running"
+          echo "pip version $(pip --version) running"
+          cp buildout.cfg.example buildout.cfg
+          sed -ri 's/# +profiles/development.cfg/   profiles\/development.cfg/' buildout.cfg
+
+    - script:
+        name: building
+        code: |
+          buildout
+
+    - script:
+        name: testing
+        code: |
+          bin/test

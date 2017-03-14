@@ -42,6 +42,7 @@ setup(
             'webtest',
             'pylint',
             'tox',
+            'virtualenv',
             'factory_boy',
             'selenium==2.53.6',
         ],
