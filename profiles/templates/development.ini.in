@@ -1,0 +1,18 @@
+# pserve and command line configuration for a local development machine
+
+[includes]
+include_ini_files =
+    resource://websauna/conf/development.ini
+    resource://enkiblog/conf/base.ini
+    resource://websauna/conf/base.ini
+
+[app:main]
+websauna.site_id = enkiblog_dev
+websauna.site_email_prefix = [enkiblog DEV]
+sqlalchemy.url = postgresql://127.0.0.1/enkiblog_dev
+websauna.secrets_file = resource://enkiblog/conf/development-secrets.ini
+
+
+[alembic]
+# path to migration scripts
+script_location = src/enkiblog/alembic

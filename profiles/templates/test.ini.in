@@ -1,0 +1,14 @@
+# py.test --ini configuration for running the enkiblog test suite
+
+[includes]
+include_ini_files =
+    resource://websauna/conf/test.ini
+    resource://enkiblog/conf/base.ini
+    resource://websauna/conf/base.ini
+
+[app:main]
+websauna.site_id = enkiblog_test
+websauna.site_email_prefix = [enkiblog TEST]
+sqlalchemy.url = postgresql://localhost/enkiblog_dev
+websauna.secrets_file = /home/enkidulan/projects/websauna.enkiblog/profiles/templates/test-secrets.ini.in
+websauna.test_web_server_port = 8533

@@ -1,0 +1,16 @@
+# pserve and command line configuration for a production server
+
+[includes]
+include_ini_files =
+    resource://websauna/conf/production.ini
+    resource://enkiblog/conf/base.ini
+    resource://websauna/conf/base.ini
+
+[app:main]
+use = egg:enkiblog
+websauna.init = enkiblog.Initializer
+websauna.site_id = enkiblog_prod
+websauna.site_email_prefix = [enkiblog]
+sqlalchemy.url = postgresql://localhost/enkiblog_prod
+websauna.secrets_file = resource://enkiblog/conf/production-secrets.ini
+

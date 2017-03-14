@@ -1,0 +1,39 @@
+{# Template for home view #}
+
+{% extends "site/base.html" %}
+
+{% block content %}
+
+    <div class="jumbotron text-center">
+        <h1>{{ site_name }}</h1>
+        <p class="lead text-center">
+            {{ site_tag_line }}
+        </p>
+    </div>
+
+    Post: <span id="post-title">{{post.title}}</span>
+
+    {% if request.user %}
+        <p id="demo-text">
+            Welcome {{ request.user.friendly_name }}!
+        </p>
+    {% else %}
+        <p id="demo-text">
+            Welcome visitor!
+        </p>
+    {% endif %}
+
+    <a id="post-prev"
+       class="btn btn-default {{ 'disabled' if not prev_link }}"
+       href="{{prev_link}}"
+       role="button">
+       Prev Post
+    </a>
+    <a id="post-next"
+       class="btn btn-default {{ 'disabled' if not next_link }}"
+       href="{{next_link}}"
+       role="button">
+       Next Post
+    </a>
+
+{% endblock %}
