@@ -13,7 +13,7 @@ build:
         install_wheel: false # Enable wheel to speed up builds (experimental)
 
     - pip-install:
-      zc.buildout
+        zc.buildout
 
     - script:
         name: setup env configuration
