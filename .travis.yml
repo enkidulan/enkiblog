@@ -11,9 +11,9 @@ services:
 # - sudo apt-get update --fix-missing
 # - sudo apt-get install -qq xserver-xephyr scrot xvfb tightvncserver
 install:
-  - sudo pip3 install pip3 --upgrade
-  - sudo pip3 install setuptools --upgrade
-  - sudo pip3 install zc.buildout
+  - pip install pip --upgrade
+  - pip install setuptools --upgrade
+  - pip install zc.buildout
   - echo -e "[buildout]\nextends = profiles/development.cfg\n" > buildout.cfg
   - buildout -Nv -q -t 10
 before_script:
