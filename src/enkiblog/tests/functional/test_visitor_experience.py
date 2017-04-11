@@ -41,7 +41,6 @@ def test_user_can_navigate_by_paginator_between_posts(
         for post in posts:  # creating noise
             fakefactory.PostFactory(published_at=post.published_at, state='draft')
         dbsession.expunge_all()
-
     navigator().navigate(site)
 
     assert browser.find_by_css('#post-prev').has_class('disabled')

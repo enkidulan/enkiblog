@@ -1,4 +1,5 @@
 from pyramid.httpexceptions import HTTPFound
+from pyramid.response import Response
 from pyramid.view import view_config
 from sqlalchemy import func
 from sqlalchemy.orm.exc import NoResultFound
@@ -49,3 +50,11 @@ class VistorsResources:
             'prev_link': slug_prev and self.request.route_url("posts", slug=slug_prev),
             'next_link': slug_next and self.request.route_url("posts", slug=slug_next),
         }
+
+
+@view_config(route_name='media')
+def favicon_view(context, request):
+    query = request.dbsession.query(models.Media).filter_by(
+        state='published', slug=request.matchdict["slug"])
+    obj = query.one()
+    return Response(content_type=obj.mimetype, body=obj.blob)

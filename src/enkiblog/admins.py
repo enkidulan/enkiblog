@@ -19,3 +19,18 @@ class PostAdmin(ModelAdmin):
 
         def get_title(self):
             return self.get_object().title
+
+
+@model_admin(traverse_id="media")
+class MediaAdmin(ModelAdmin):
+    title = "Media"
+
+    singular_name = "media"
+    plural_name = "media"
+
+    model = models.Media
+
+    class Resource(ModelAdmin.Resource):
+
+        def get_title(self):
+            return self.get_object().title

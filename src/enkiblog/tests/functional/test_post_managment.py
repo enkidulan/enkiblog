@@ -7,6 +7,7 @@ def test_create_post(site, navigator, admin_user, fakefactory):
     post = fakefactory.PostFactory.build()
 
     navigator = navigator(user=admin_user)
+
     navigator.submit(
         site.admin_menu.posts.add_post_page.add_post_form,
         data={
