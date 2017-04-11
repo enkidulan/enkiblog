@@ -1,13 +1,13 @@
-"""Initial migration
+"""initial
 
-Revision ID: 1351b08cda0c
+Revision ID: 98da13478d04
 Revises: 
-Create Date: 2017-02-25 16:20:52.516629
+Create Date: 2017-04-11 15:08:55.022981
 
 """
 
 # revision identifiers, used by Alembic.
-revision = '1351b08cda0c'
+revision = '98da13478d04'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -33,6 +33,21 @@ def upgrade():
     sa.PrimaryKeyConstraint('id', name=op.f('pk_group')),
     sa.UniqueConstraint('name', name=op.f('uq_group_name'))
     )
+    op.create_table('media',
+    sa.Column('uuid', postgresql.UUID(as_uuid=True), nullable=False),
+    sa.Column('created_at', websauna.system.model.columns.UTCDateTime(), nullable=False),
+    sa.Column('published_at', websauna.system.model.columns.UTCDateTime(), nullable=True),
+    sa.Column('updated_at', websauna.system.model.columns.UTCDateTime(), nullable=True),
+    sa.Column('title', sa.String(length=256), nullable=False),
+    sa.Column('mimetype', sa.String(length=256), nullable=True),
+    sa.Column('description', sa.Text(), nullable=False),
+    sa.Column('slug', sa.String(length=256), nullable=False),
+    sa.Column('blob', postgresql.BYTEA(), nullable=True),
+    sa.Column('state', sa.Text(), nullable=False),
+    sa.Column('author', sa.String(length=256), nullable=True),
+    sa.PrimaryKeyConstraint('uuid', name=op.f('pk_media')),
+    sa.UniqueConstraint('slug', name=op.f('uq_media_slug'))
+    )
     op.create_table('posts',
     sa.Column('uuid', postgresql.UUID(as_uuid=True), nullable=False),
     sa.Column('created_at', websauna.system.model.columns.UTCDateTime(), nullable=False),
@@ -42,6 +57,7 @@ def upgrade():
     sa.Column('description', sa.Text(), nullable=False),
     sa.Column('body', sa.Text(), nullable=False),
     sa.Column('slug', sa.String(length=256), nullable=False),
+    sa.Column('state', sa.Text(), nullable=False),
     sa.Column('author', sa.String(length=256), nullable=True),
     sa.PrimaryKeyConstraint('uuid', name=op.f('pk_posts')),
     sa.UniqueConstraint('slug', name=op.f('uq_posts_slug'))
@@ -92,5 +108,6 @@ def downgrade():
     op.drop_table('users')
     op.drop_table('user_activation')
     op.drop_table('posts')
+    op.drop_table('media')
     op.drop_table('group')
     # ### end Alembic commands ###
