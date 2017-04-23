@@ -24,11 +24,11 @@ class VistorsResources:
     def home(self):
         post = self.posts_query.first()
         if post is not None:
-            return HTTPFound(self.request.route_url("posts", slug=post.slug))
+            return HTTPFound(self.request.route_url("post", slug=post.slug))
         return {"project": "enkiblog"}
 
-    @view_config(route_name="posts", renderer='enkiblog/posts.html')
-    def posts(self):
+    @view_config(route_name="post", renderer='enkiblog/post.html')
+    def post(self):
         dbsession = self.dbsession
         slug = self.request.matchdict["slug"]
 
@@ -47,8 +47,8 @@ class VistorsResources:
         return {
             "project": "enkiblog",
             'post': post,
-            'prev_link': slug_prev and self.request.route_url("posts", slug=slug_prev),
-            'next_link': slug_next and self.request.route_url("posts", slug=slug_next),
+            'prev_link': slug_prev and self.request.route_url("post", slug=slug_prev),
+            'next_link': slug_next and self.request.route_url("post", slug=slug_next),
         }
 
 
