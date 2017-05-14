@@ -9,6 +9,11 @@ class Initializer(websauna.system.Initializer):
     Override parent class methods to customize application behavior.
     """
 
+    def configure_workflow(self):
+        """Configure workflow."""
+        from . import workflow
+        self.config.include(workflow)
+
     def configure_static(self):
         """Configure static asset serving and cache busting."""
         super(Initializer, self).configure_static()
@@ -32,7 +37,7 @@ class Initializer(websauna.system.Initializer):
         """
         # We override this method, so that we route home to our home screen, not Websauna default one
         self.config.add_route('home', '/')
-        self.config.add_route('posts', '/posts/{slug}')
+        self.config.add_route('post', '/post/{slug}')
         self.config.add_route('media', '/media/{slug}')
         from . import views
         self.config.scan(views)
@@ -80,6 +85,7 @@ class Initializer(websauna.system.Initializer):
     #         provided=ISQLAlchemySessionFactory)
 
     def run(self):
+        self.configure_workflow()
         super(Initializer, self).run()
 
 

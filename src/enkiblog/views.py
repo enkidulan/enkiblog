@@ -17,8 +17,12 @@ class VistorsResources:
     def __init__(self, request):
         self.request = request
         self.dbsession = request.dbsession
-        self.posts_query = self.dbsession.query(
-            models.Post).filter_by(state='published').order_by(models.Post.published_at.desc())
+        # self.posts_query = self.dbsession.query(models.Post).filter_by(state='published')
+        self.posts_query = models.Post.acl_aware_listing_query(
+            dbsession=self.dbsession,
+            effective_principals=request.effective_principals,
+            actions=('view',))
+        self.posts_query = self.posts_query.order_by(models.Post.published_at.desc())
 
     @view_config(route_name="home", renderer='enkiblog/home.html')
     def home(self):

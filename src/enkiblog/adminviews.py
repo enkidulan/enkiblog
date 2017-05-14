@@ -116,7 +116,7 @@ class MediaAdd(DefaultAdd):
 
         obj.title = obj.blob['filename']
         obj.slug = obj.blob['filename']
-        obj.author = self.request.user.username
+        obj.author = self.request.user
         obj.mimetype = obj.blob['mimetype']
 
         # XXX: so far so good

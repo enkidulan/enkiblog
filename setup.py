@@ -32,6 +32,7 @@ setup(
     install_requires=[
         'websauna',
         'python-slugify',
+        'repoze.workflow',
     ],
     extras_require={
         'test': [
@@ -45,6 +46,7 @@ setup(
             'virtualenv',
             'factory_boy',
             'selenium==2.53.6',
+            'testfixtures',
         ],
         'dev': ['websauna[dev]'],
         'serving': [
