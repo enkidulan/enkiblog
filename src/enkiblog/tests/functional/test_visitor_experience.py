@@ -12,7 +12,7 @@ def test_on_home_page_user_is_redirected_to_newest_post(
     navigator().navigate(site, check_if_navigated=False)
 
     assert browser.is_text_present(post.title)
-    assert browser.url.endswith('/posts/' + post.slug)
+    assert browser.url.endswith('/post/' + post.slug)
 
 
 def test_user_doesnt_see_not_published_posts(
@@ -26,10 +26,10 @@ def test_user_doesnt_see_not_published_posts(
 
     # doesn`t redirect to unpublished posts
     assert browser.is_text_present('There is nothing here yet...')
-    assert not browser.url.endswith('/posts/' + post.slug)
+    assert not browser.url.endswith(post.slug)
 
     # post is not accessible by url
-    browser.visit(web_server + '/posts/' + post.slug)
+    browser.visit(web_server + '/post/' + post.slug)  # XXX: inflexible
     assert browser.is_text_present('Not found')
 
 

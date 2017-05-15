@@ -96,5 +96,5 @@ class BasePostFactory(BaseFactory):
 
 
 class PostFactory(BasePostFactory):
-    state = 'published'
+    state = 'public'
     published_at = factory.LazyAttribute(lambda obj: now())

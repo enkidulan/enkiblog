@@ -63,7 +63,7 @@ class PostAdd(DefaultAdd):
         dbsession = self.context.get_dbsession()
 
         obj.slug = slugify(obj.title, Post.slug, dbsession)
-        obj.author = self.request.user.username
+        obj.author = self.request.user
 
         # ???: Make sure we autogenerate a slug
         dbsession.add(obj)

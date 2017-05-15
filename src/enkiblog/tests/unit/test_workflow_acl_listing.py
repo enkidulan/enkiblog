@@ -3,6 +3,7 @@ from itertools import chain
 from testfixtures import compare as _base_compare
 from functools import partial
 
+# TODO: move to functional tests?
 
 def compare(a, b):
     _base_compare(sorted(repr(i) for i in a), sorted(repr(i) for i in b))

@@ -74,7 +74,9 @@ class Post(Base):
             and not set(perm.actions).isdisjoint(actions)
         ]
 
-        relational_states = [(state, agent) for (state, agents) in allowing_states_and_agents for agent in agents if isinstance(agent, sa.orm.attributes.InstrumentedAttribute)]
+        relational_states = [
+            (state, agent) for (state, agents) in allowing_states_and_agents
+            for agent in agents if isinstance(agent, sa.orm.attributes.InstrumentedAttribute)]
 
         principale_states = [(state, agents) for (state, agents) in allowing_states_and_agents]
 
@@ -89,7 +91,7 @@ class Post(Base):
             acl_allowed_posts_queries = [
                 dbsession.query(cls).filter(cls.state == state).filter(agent == user)
                 for (state, agent) in relational_states]
-            query = query.union(*acl_allowed_posts_queries)
+            query = query.union(*acl_allowed_posts_queries).distinct(cls.uuid)
 
         return query
 
