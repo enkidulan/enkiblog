@@ -38,14 +38,15 @@ class Post(Base):
 
     @property
     def __workflowed_acl__(self):
-        # only one workflow allowed for simplicity sake
+        # NOTE: only one workflow allowed for simplicity sake
+        # NOTE: acl agents and actions is always tuples
         return {
             'public': (
-                P(Allow, Everyone, self.permissions['viewing']),
+                P(Allow, (Everyone, ), self.permissions['viewing']),
                 P(Allow, self.editors, self.permissions['managing']),
                 P(*DENY_ALL),
             ),
-            'draft': (
+            'private': (
                 P(Allow, self.editors, self.permissions['managing']),
                 P(*DENY_ALL),
             ),
@@ -57,24 +58,39 @@ class Post(Base):
         return acl
 
     @classmethod
-    def acl_aware_listing_query(cls, dbsession, effective_principals, actions):
+    def acl_aware_listing_query(cls, dbsession, effective_principals, actions, user=None):
+        # TODO: take user from effective_principals
         # !!!: doesn't allow to have localy stored custom acl!!!
         # TODO: make posts objects context factory, move it there
         # import pdb; pdb.set_trace()
 
         # return dbsession.query(cls).filter_by(state='published')
         # cls.__workflowed_acl__.fget(cls)
-        states_and_agents = [(state, perm.agents) for state, perms in cls.__workflowed_acl__.fget(cls).items() for perm in perms if perm.allowance == Allow and not set(perm.actions).isdisjoint(actions)]
+        allowing_states_and_agents = [
+            (state, perm.agents if isinstance(perm.agents, tuple) else perm.agents.fget(cls))
+            for state, perms in cls.__workflowed_acl__.fget(cls).items()
+            for perm in perms
+            if perm.allowance == Allow
+            and not set(perm.actions).isdisjoint(actions)
+        ]
 
-        # filtering by effective_principals
-        states = [state for (state, agents) in states_and_agents if not set(effective_principals).isdisjoint({agents})] # TODO: add support for itterable agents
-        query = dbsession.query(cls).filter(cls.state.in_(states))
+        relational_states = [(state, agent) for (state, agents) in allowing_states_and_agents for agent in agents if isinstance(agent, sa.orm.attributes.InstrumentedAttribute)]
 
-        # filtering by relations - owner, group member, etc...
-        # states = [state for (state, agents) in states_and_agents if isinstance(agents, sa.Column) and state not in states]
+        principale_states = [(state, agents) for (state, agents) in allowing_states_and_agents]
 
+        # filtering by general effective_principals
+        allowing_states_for_principals = [
+            state for (state, agent) in principale_states
+            if not set(effective_principals).isdisjoint(agent)
+        ]  # TODO: add support for itterable agents
+        query = dbsession.query(cls).filter(cls.state.in_(allowing_states_for_principals))
 
-        # states_and_agents
+        if user:
+            acl_allowed_posts_queries = [
+                dbsession.query(cls).filter(cls.state == state).filter(agent == user)
+                for (state, agent) in relational_states]
+            query = query.union(*acl_allowed_posts_queries)
+
         return query
 
     uuid = sa.Column(psql_dialect.UUID(as_uuid=True), default=uuid4, primary_key=True)
