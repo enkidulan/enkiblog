@@ -29,7 +29,7 @@ def test_user_doesnt_see_not_published_posts(
     assert not browser.url.endswith(post.slug)
 
     # post is not accessible by url
-    browser.visit(web_server + '/post/' + post.slug)  # XXX: inflexible
+    browser.visit(web_server + '/post/' + post.slug)  # XXX: redesign url making func, currently is inflexible
     assert browser.is_text_present('Not found')
 
 

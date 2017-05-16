@@ -21,7 +21,8 @@ class VistorsResources:
         self.posts_query = models.Post.acl_aware_listing_query(
             dbsession=self.dbsession,
             effective_principals=request.effective_principals,
-            actions=('view',))
+            actions=('view',),
+            user=request.user)
         self.posts_query = self.posts_query.order_by(models.Post.published_at.desc())
 
     @view_config(route_name="home", renderer='enkiblog/home.html')
@@ -36,11 +37,18 @@ class VistorsResources:
         dbsession = self.dbsession
         slug = self.request.matchdict["slug"]
 
+        # import pdb; pdb.set_trace()
+
         post_subquery = self.posts_query.subquery('post_subquery')
+
+        # TODO: investigate case - probably after union issue
+        # XXX: actually important issue - need to be fixed
+        slug_field = post_subquery.c.slug if hasattr(post_subquery.c, 'slug') else post_subquery.c.posts_slug
+
         neighborhood = dbsession.query(
-            post_subquery.c.slug.label('current'),
-            func.lag(post_subquery.c.slug).over().label('prev'),
-            func.lead(post_subquery.c.slug).over().label('next')
+            slug_field.label('current'),
+            func.lag(slug_field).over().label('prev'),
+            func.lead(slug_field).over().label('next')
         ).subquery('neighborhood')
         neighbors = dbsession.query(neighborhood).filter(
             neighborhood.c.current == slug).subquery('neighbors')

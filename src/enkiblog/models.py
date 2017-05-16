@@ -91,7 +91,7 @@ class Post(Base):
             acl_allowed_posts_queries = [
                 dbsession.query(cls).filter(cls.state == state).filter(agent == user)
                 for (state, agent) in relational_states]
-            query = query.union(*acl_allowed_posts_queries).distinct(cls.uuid)
+            query = query.union(*acl_allowed_posts_queries)  # TODO add .distinct(cls.uuid) add distinct
 
         return query
 
