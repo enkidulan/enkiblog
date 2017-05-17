@@ -1,0 +1,95 @@
+{# Navigation bar inside header. #}
+<nav class="navbar navbar-default" style="background-image: url('{{'enkiblog:static/nav-bar-bk.jpeg'|static_url }}');">
+  <div class="container">
+
+    {# Brand and toggle get grouped for better mobile display #}
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#header-navbar-collapse">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      {% include "site/logo.html" %}
+    </div>
+
+    {# Collect the nav links, forms, and other content for toggling #}
+    <div class="collapse navbar-collapse" id="header-navbar-collapse">
+
+      <ul class="nav navbar-nav navbar-right site-nav-user-actions">
+        {% if request.user %}
+
+          {% if request.has_permission('shell') and 'notebook' in request.registry.features %}
+            <li>
+              <a id="nav-superuser" href="{{'admin_shell'|route_url}}">
+                <i class="fa fa-terminal"></i>
+                Shell
+              </a>
+            </li>
+          {% endif %}
+
+          {# We have admin interface for this site #}
+          {% if request.admin %}
+            {# User has permission to view admin root #}
+            {% if request.has_permission('view', context=request.admin) %}
+              <li>
+                <a id="nav-admin" href="{{'admin_home'|route_url}}">
+                  <i class="fa fa-wrench"></i>
+                  Admin
+                </a>
+              </li>
+            {% endif %}
+          {% endif %}
+
+          <li>
+            <a id="nav-profile" href="#">
+              <i class="fa fa-user"></i>
+              {{ request.user.friendly_name }}
+            </a>
+          </li>
+
+          <li>
+            <form method="POST" action="{{'logout'|route_url}}">
+              <input name="csrf_token" type="hidden" value="{{ request.session.get_csrf_token() }}">
+              <button id="nav-logout" class="btn btn-link">
+                <i class="fa fa-sign-out"></i>
+                Log out
+              </button>
+            </form>
+          </li>
+        {% else %}
+          <li>
+            <a id="nav-sign-up" href="{{'register'|route_url}}">Sign up</a>
+          </li>
+
+          <li>
+            <a id="nav-sign-in" href="{{'login'|route_url}}">Sign in</a>
+          </li>
+        {% endif %}
+
+      </ul>
+
+      <ul class="nav navbar-nav nav-tabs navbar-left site-nav-menu">
+        <li class="hidden">
+          <a href="#page-top"></a>
+        </li>
+
+        <li>
+          <a class="lead" href="{{'home'|route_url}}">Blog</a>
+        </li>
+
+        <li>
+          <a class="lead" href="{{'home'|route_url}}">Tools</a>
+        </li>
+
+        <li>
+          <a class="lead" href="{{'home'|route_url}}">About Me</a>
+        </li>
+      </ul>
+
+
+    </div>
+    {# /.navbar-collapse #}
+  </div>
+  {# /.container-fluid #}
+</nav>

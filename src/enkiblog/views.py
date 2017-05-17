@@ -24,6 +24,7 @@ class VistorsResources:
             actions=('view',),
             user=request.user)
         self.posts_query = self.posts_query.order_by(models.Post.published_at.desc())
+        # TODO: add test to show only public posts
 
     @view_config(route_name="home", renderer='enkiblog/home.html')
     def home(self):

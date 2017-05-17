@@ -2,38 +2,68 @@
 
 {% extends "site/base.html" %}
 
+{% block body_classes %}style="background-image: url('{{'enkiblog:static/background.jpeg'|static_url }}');"{% endblock %}
+
+
 {% block content %}
 
-    <div class="jumbotron text-center">
-        <h1>{{ site_name }}</h1>
-        <p class="lead text-center">
-            {{ site_tag_line }}
-        </p>
+
+<div class="post content row">
+
+    <div class="article col-md-8">
+        <article>
+            <h1 id="post-title">{{post.title}}</h1>
+            <div class="post-meta-info">
+              <p id="post-description">
+                  {{post.description}}
+              </p>
+              <p>{{post.published_at}} by {{post.author.full_name}}</p>
+              <ul class="list-inline">
+                <li>Item 1</li>
+                <li>Item 2</li>
+                <li>Item 3</li>
+              </ul>
+            </div>
+            <div id="post-body">
+                {{post.body}}
+            </div>
+        </article>
+
+        <a id="post-prev"
+           class="btn btn-default {{ 'disabled' if not prev_link }}"
+           href="{{prev_link}}"
+           role="button">
+           Prev Post
+        </a>
+
+        <a id="post-next"
+           class="btn btn-default {{ 'disabled' if not next_link }}"
+           href="{{next_link}}"
+           role="button">
+           Next Post
+        </a>
+
     </div>
 
-    Post: <span id="post-title">{{post.title}}</span>
+    <div class="sidebar col-md-4">
+        <div class="recent">
+            <h3>About</h3>
+            <ul>
+                <li><a href="#">text of the printing and typesetting industry</a></li>
+                <li><a href="#"> Lorem Ipsum has been the industry's standard</a></li>
+                <li><a href="#"> dummy text ever since the 1500s, when an</a></li>
+                <li><a href="#"> unknown printer took a galley of type and scramb</a></li>
+                <li><a href="#">led it to make a type specimen book. It has survived </a></li>
+                <li><a href="#">not only five centuries, but also the leap into </a></li>
+                <li><a href="#">electronic typesetting, remaining essentially </a></li>
+                <li><a href="#">unchanged. It was popularised in the 1960s with </a></li>
+                <li><a href="#">thease of Letraset sheets containing Lorem Ipsume</a></li>
+            </ul>
+        </div>
+        <div class="add">
+        </div>
+    </div>
 
-    {% if request.user %}
-        <p id="demo-text">
-            Welcome {{ request.user.friendly_name }}!
-        </p>
-    {% else %}
-        <p id="demo-text">
-            Welcome visitor!
-        </p>
-    {% endif %}
-
-    <a id="post-prev"
-       class="btn btn-default {{ 'disabled' if not prev_link }}"
-       href="{{prev_link}}"
-       role="button">
-       Prev Post
-    </a>
-    <a id="post-next"
-       class="btn btn-default {{ 'disabled' if not next_link }}"
-       href="{{next_link}}"
-       role="button">
-       Next Post
-    </a>
+</div>
 
 {% endblock %}
