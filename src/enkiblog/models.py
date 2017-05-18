@@ -20,6 +20,19 @@ def resolve_user_requested_permission_to_states():
     pass
 
 
+class AssociationPostsTags(Base):
+    __tablename__ = "association_posts_tags"
+    post_uuid = sa.Column(psql_dialect.UUID, sa.ForeignKey('posts.uuid'), primary_key=True)
+    tag_uuid = sa.Column(psql_dialect.UUID, sa.ForeignKey('tags.uuid'), primary_key=True)
+    post = sa.orm.relationship("Post", back_populates="tags")
+    tag = sa.orm.relationship("Tag", back_populates="posts")
+
+# association_posts_tags = sa.Table('association_posts_tags', Base.metadata,
+#     sa.Column('post_uuid', psql_dialect.UUID, sa.ForeignKey('posts.uuid')),
+#     sa.Column('tag_uuid', psql_dialect.UUID, sa.ForeignKey('tags.uuid'))
+# )
+
+
 class Post(Base):
     __tablename__ = "posts"
 
@@ -114,6 +127,8 @@ class Post(Base):
     author_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'))
     author = sa.orm.relationship('User')
 
+    tags = sa.orm.relationship('AssociationPostsTags', back_populates="post")
+
     @property
     def id(self):  # XXX:
         return self.uuid
@@ -148,3 +163,19 @@ class Media(Base):
     @property
     def id(self):  # XXX:
         return self.uuid
+
+
+class Tag(Base):
+    __tablename__ = "tags"
+
+    uuid = sa.Column(psql_dialect.UUID(as_uuid=True), default=uuid4, primary_key=True)
+
+    title = sa.Column(sa.String(256), unique=True, nullable=False)
+
+    posts = sa.orm.relationship('AssociationPostsTags', back_populates="tag")
+
+    @property
+    def id(self):  # XXX:
+        return self.uuid
+
+

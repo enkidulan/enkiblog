@@ -1,0 +1,28 @@
+{# Template for home view #}
+
+{% extends "site/base.html" %}
+
+{% block body_classes %}style="background-image: url('{{'enkiblog:static/background.jpeg'|static_url }}');"{% endblock %}
+
+
+{% block content %}
+
+
+<div class="post content row">
+
+    <div class="article col-md-8">
+        {% block article %}
+        {% endblock article %}
+
+    </div>
+
+    <div class="sidebar col-md-4">
+
+        {% block sidebar %}
+        {% endblock sidebar %}
+
+    </div>
+
+</div>
+
+{% endblock %}
