@@ -52,6 +52,7 @@ front-end-app/vendor
 front-end-app/node_modules/
 logs/
 supervisord.conf
-
 node_modules/
 
+secrets.ini
+config.ini

@@ -2,3 +2,6 @@
 extends =
 #     profiles/production.cfg
 #     profiles/development.cfg
+
+#[config_file]
+#sqlalchemy_url = postgresql://user:psw@localhost/enkiblog_dev
