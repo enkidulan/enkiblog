@@ -14,7 +14,7 @@ install:
   - pip install pip --upgrade
   - pip install setuptools --upgrade
   - pip install zc.buildout
-  - echo -e "[buildout]\nextends = profiles/development.cfg\n" > buildout.cfg
+  - echo -e "[buildout]\nextends = profiles/test.cfg\n  [config_file]\nsqlalchemy_url = postgresql://postgres@localhost/enkiblog_test\n" > buildout.cfg
   - buildout -Nv -q -t 10
 before_script:
   - "export DISPLAY=:99.0"
