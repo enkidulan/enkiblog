@@ -56,3 +56,4 @@ node_modules/
 
 secrets.ini
 config.ini
+enkiblog_web_sauna_wsgi.py

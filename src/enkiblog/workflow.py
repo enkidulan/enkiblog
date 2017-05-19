@@ -4,6 +4,7 @@ from repoze.workflow import Workflow
 
 def includeme(config):
     # dummy simple singe workflow
+    # TODO: workflow is not used anywhere
     workflow = Workflow(
         state_attr='state',
         initial_state='private',
