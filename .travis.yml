@@ -1,7 +1,7 @@
 language: python
 before_install:
-  openssl aes-256-cbc -K $encrypted_a0a419e2d994_key -iv $encrypted_a0a419e2d994_iv -in deploy.sh.enc -out deploy.sh -d
-  openssl aes-256-cbc -K $encrypted_a0a419e2d994_key -iv $encrypted_a0a419e2d994_iv -in kittycat.jpg.enc -out kittycat.jpg -d
+  - openssl aes-256-cbc -K $encrypted_a0a419e2d994_key -iv $encrypted_a0a419e2d994_iv -in deploy.sh.enc -out deploy.sh -d
+  - openssl aes-256-cbc -K $encrypted_a0a419e2d994_key -iv $encrypted_a0a419e2d994_iv -in kittycat.jpg.enc -out kittycat.jpg -d
 python:
   - 3.5
 addons:
