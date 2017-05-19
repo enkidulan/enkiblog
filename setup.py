@@ -33,6 +33,7 @@ setup(
         'websauna',
         'python-slugify',
         'repoze.workflow',
+        'zc.buildout',
     ],
     extras_require={
         'test': [
@@ -47,6 +48,7 @@ setup(
             'factory_boy',
             'selenium==2.53.6',
             'testfixtures',
+            'boom',
         ],
         'dev': ['websauna[dev]'],
         'serving': [
