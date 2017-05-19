@@ -1,37 +1,36 @@
 language: python
 before_install:
-  - openssl aes-256-cbc -K $encrypted_a0a419e2d994_key -iv $encrypted_a0a419e2d994_iv -in deploy.sh.enc -out deploy.sh -d
-  - openssl aes-256-cbc -K $encrypted_a0a419e2d994_key -iv $encrypted_a0a419e2d994_iv -in kittycat.jpg.enc -out kittycat.jpg -d
+- openssl aes-256-cbc -K $encrypted_a0a419e2d994_key -iv $encrypted_a0a419e2d994_iv
+  -in kittycat.jpg.enc -out kittycat.jpg -d
+- openssl aes-256-cbc -K $encrypted_a0a419e2d994_key -iv $encrypted_a0a419e2d994_iv
+  -in deploy.sh.enc -out deploy.sh -d
 python:
-  - 3.5
+- 3.5
 addons:
-  postgresql: "9.4"
-  firefox: "45.0"
+  postgresql: '9.4'
+  firefox: '45.0'
 services:
-  - postgresql
-  - redis-server
-# before_install:
-# - sudo apt-get update --fix-missing
-# - sudo apt-get install -qq xserver-xephyr scrot xvfb tightvncserver
+- postgresql
+- redis-server
 install:
-  - pip install pip --upgrade
-  - pip install setuptools --upgrade
-  - pip install zc.buildout
-  - echo -e "[buildout]\nextends = profiles/test.cfg\n[config_file]\nsqlalchemy_url = postgresql://postgres@localhost/enkiblog_test\n" > buildout.cfg
-  - buildout -Nv -q -t 10
+- pip install pip --upgrade
+- pip install setuptools --upgrade
+- pip install zc.buildout
+- echo -e "[buildout]\nextends = profiles/test.cfg\n[config_file]\nsqlalchemy_url
+  = postgresql://postgres@localhost/enkiblog_test\n" > buildout.cfg
+- buildout -Nv -q -t 10
 before_script:
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-  - sleep 3 # give xvfb some time to start
-  - psql -c 'create database enkiblog_test;' -U postgres
-  - tar -xjf /tmp/firefox-45.0.tar.bz2 --directory /tmp
-  - export PATH="/tmp/firefox:$PATH"
-  - echo "Using firefox version `firefox --version`"
+- export DISPLAY=:99.0
+- sh -e /etc/init.d/xvfb start
+- sleep 3
+- psql -c 'create database enkiblog_test;' -U postgres
+- tar -xjf /tmp/firefox-45.0.tar.bz2 --directory /tmp
+- export PATH="/tmp/firefox:$PATH"
+- echo "Using firefox version `firefox --version`"
 script:
-  - bin/test
-
+- bin/test
 deploy:
-  - provider: script
-    script: deploy.sh
-    on:
-      branch: master
+- provider: script
+  script: deploy.sh
+  on:
+    branch: master
