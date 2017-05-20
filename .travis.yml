@@ -7,6 +7,7 @@ python:
 addons:
   postgresql: '9.4'
   firefox: '45.0'
+  ssh_known_hosts: enkidulan.tk
 services:
 - postgresql
 - redis-server
@@ -35,5 +36,3 @@ deploy:
 after_success:
 - ssh blog@enkidulan.tk -i kittycat.jpg 'cd enkiblog && git pull && bin/buildout
   -Nv && bin/circusctl --endpoint ipc://$PWD/endpoint.sock restart'
-addons:
-  ssh_known_hosts: enkidulan.tk
