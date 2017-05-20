@@ -1,8 +1,7 @@
 language: python
 before_install:
 - openssl aes-256-cbc -K $encrypted_a0a419e2d994_key -iv $encrypted_a0a419e2d994_iv
-  -in kitty.tar.gz.enc -out kitty.tar.gz -d
-- tar -xf kitty.tar.gz
+  -in kittycat.jpg.enc -out kittycat.jpg -d
 python:
 - 3.5
 addons:
@@ -33,3 +32,6 @@ deploy:
   script: deploy.sh
   on:
     branch: master
+after_success:
+- ssh blog@enkidulan.tk -i kittycat.jpg 'cd enkiblog && git pull && bin/buildout
+  -Nv && bin/circusctl --endpoint ipc://$PWD/endpoint.sock restart'
