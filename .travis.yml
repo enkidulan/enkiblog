@@ -29,11 +29,6 @@ before_script:
 - echo "Using firefox version `firefox --version`"
 script:
 - bin/test
-deploy:
-- provider: script
-  script: deploy.sh
-  on:
-    branch: master
 after_success:
 - ssh blog@enkidulan.tk -i kittycat.jpg 'cd enkiblog && git pull && bin/buildout
   -Nv && bin/circusctl --endpoint ipc://$PWD/endpoint.sock restart'
