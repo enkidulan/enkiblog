@@ -31,4 +31,4 @@ script:
 - bin/test
 after_success:
 - ssh blog@enkidulan.tk -i kittycat.jpg 'cd enkiblog && git pull && bin/buildout
-  -Nv && bin/circusctl --endpoint ipc://$PWD/endpoint.sock restart'
+  -Nv && bin/ws-alembic -c config.ini -x packages=all upgrade head && bin/circusctl --endpoint ipc://$PWD/endpoint.sock restart'
