@@ -2,29 +2,31 @@
 
 import colander
 import deform
-import string
 
-from pyramid.httpexceptions import HTTPFound
-from pyramid.view import view_config
-from websauna.system.core import messages
 from websauna.system.core.viewconfig import view_overrides
-from websauna.system.crud import listing
-from websauna.system.admin.views import Listing as DefaultListing
 from websauna.system.admin.views import Add as DefaultAdd
-from websauna.system.admin.views import Show as DefaultShow
-from websauna.system.admin.views import Edit as DefaultEdit
-from websauna.system.crud.views import ResourceButton
-from websauna.system.crud.views import TraverseLinkButton
 from websauna.system.form.csrf import CSRFSchema
 from websauna.system.form.resourceregistry import ResourceRegistry
 from websauna.system.form.schema import objectify, dictify
-from websauna.system.http import Request
-from websauna.utils.time import now
 from deform.schema import FileData
+from websauna.system.form.sqlalchemy import UUIDForeignKeyValue, UUIDModelSet
+
+from sqlalchemy.orm.collections import InstrumentedList
 
 from .admins import PostAdmin, MediaAdmin
-from .models import Post, Media
+from .models import Post, Media, Tag, AssociationPostsTags
 from .utils import slugify
+from websauna.utils.slug import uuid_to_slug
+
+
+@colander.deferred
+def deferred_tags_widget(node, kw):
+    dbsession = kw['request'].dbsession
+    vocab = [
+        (uuid_to_slug(uuid), title)
+        for uuid, title in dbsession.query(Tag.uuid, Tag.title).all()]
+    return deform.widget.Select2Widget(
+        values=vocab, multiple=True, css_class='tags-select2w')
 
 
 class PostSchema(CSRFSchema):
@@ -35,6 +37,11 @@ class PostSchema(CSRFSchema):
         colander.String(),
         required=True,
         widget=deform.widget.TextAreaWidget(),)
+
+    tags = colander.SchemaNode(
+        UUIDModelSet(model=Tag, match_column="uuid"),
+        widget=deferred_tags_widget,
+        missing=None)
 
     body = colander.SchemaNode(
         colander.String(),
@@ -48,9 +55,13 @@ class PostSchema(CSRFSchema):
     def objectify(self, appstruct: dict, obj):
         objectify(self, appstruct, obj)
 
+# from websauna.system.crud.formgenerator import SQLAlchemyFormGenerator
+
 
 @view_overrides(context=PostAdmin)
 class PostAdd(DefaultAdd):
+
+    # TODO: try form_generator = SQLAlchemyFormGenerator(includes=includes)
 
     def get_form(self):
         schema = PostSchema().bind(request=self.request)
@@ -62,10 +73,11 @@ class PostAdd(DefaultAdd):
 
         dbsession = self.context.get_dbsession()
 
-        obj.slug = slugify(obj.title, Post.slug, dbsession)
         obj.author = self.request.user
 
-        # ???: Make sure we autogenerate a slug
+        with dbsession.no_autoflush:
+            obj.slug = slugify(obj.title, Post.slug, dbsession)
+
         dbsession.add(obj)
         dbsession.flush()
 
@@ -122,6 +134,5 @@ class MediaAdd(DefaultAdd):
         # XXX: so far so good
         obj.blob = obj.blob['fp'].read()
 
-        # ???: Make sure we autogenerate a slug
         dbsession.add(obj)
         dbsession.flush()

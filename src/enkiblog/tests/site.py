@@ -88,6 +88,11 @@ class AddPostForm(SiteNode):
         navigator.browser.fill("descriptions", data['descriptions'])
         navigator.browser.fill("body", data['body'])
 
+        # adding tags
+        tags_input = navigator.browser.find_by_xpath('//select[@name="tags"]/following::input[@type="search"]')[0]
+        for tag in data.get('tags', []):
+            tags_input.type(tag + '\n')
+
         navigator.browser.find_by_name("add").click()
 
     def check_success(self, navigator, data):
@@ -95,6 +100,11 @@ class AddPostForm(SiteNode):
         # After login we see a profile link to our profile
         assert navigator.browser.is_text_present("Item added")
         assert navigator.browser.is_text_present(data['title'])
+
+        for tag in data.get('tags', []):
+            assert navigator.browser.is_text_present(tag)
+
+        # TODO: check all submitted data
 
     def check_validation_error(self, navigator, data):
         assert navigator.browser.is_text_present("There was a problem with your submission")

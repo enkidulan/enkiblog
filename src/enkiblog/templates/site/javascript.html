@@ -1,0 +1,14 @@
+{# Load JavaScript files.
+
+The include location of this template may alter between ``<head>`` and the end of ``<body>``.
+#}
+
+<script src="{{ 'websauna.system:static/jquery-2.0.3.min.js'|static_url }}"></script>
+<script src="{{ 'enkiblog:static/bootstrap-3.3.7-dist/js/bootstrap.min.js'|static_url }}"></script>
+
+{# Pull JS for widgets #}
+{% if request.on_demand_resource_renderer %}
+  {% for js_url in request.on_demand_resource_renderer.get_resources("js") %}
+    <script src="{{ js_url }}"></script>
+  {% endfor %}
+{% endif %}

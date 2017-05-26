@@ -2,9 +2,12 @@ import transaction
 from uuid import uuid4
 
 
-def test_create_post(site, navigator, admin_user, fakefactory):
+def test_create_post(site, navigator, admin_user, fakefactory, dbsession):
 
     post = fakefactory.PostFactory.build()
+    with transaction.manager:
+        tags = fakefactory.TagFactory.create_batch(size=4)
+        dbsession.expunge_all()
 
     navigator = navigator(user=admin_user)
 
@@ -12,6 +15,7 @@ def test_create_post(site, navigator, admin_user, fakefactory):
         site.admin_menu.posts.add_post_page.add_post_form,
         data={
             "title": post.title,
+            "tags": [i.title for i in tags],
             "descriptions": post.description,
             "body": post.body},
         status='success',

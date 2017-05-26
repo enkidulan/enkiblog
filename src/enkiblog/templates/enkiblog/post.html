@@ -5,14 +5,24 @@
     <article>
         <h1 id="post-title">{{post.title}}</h1>
         <div class="post-meta-info">
-          <p id="post-description">
-              <strong>{{post.description}}</strong>
-          </p>
-          <p>{{post.published_at}} by {{post.author.full_name}}</p>
-          <ul class="list-inline">
-            <li>Item 1</li>
-            <li>Item 2</li>
-          </ul>
+            <p id="post-description">
+                <strong>{{post.description}}</strong>
+            </p>
+            <p>{{post.published_at}} by {{post.author.full_name}}</p>
+            <ul class="list-inline">
+                <li>
+                    <h4 class="list-group-item-heading">
+                        <span class="glyphicon glyphicon-th-list" aria-hidden="true"></span>
+                    </h4>
+                </li>
+                {% for tag in tags %}
+                <li>
+                    <a href="#" class="list">
+                        <h4 class="list-group-item-heading">{{ tag }}{{ "," if not loop.last }}</h4>
+                    </a>
+                </li>
+                {% endfor %}
+            </uk>
         </div>
         <div id="post-body">
             {{post.body}}

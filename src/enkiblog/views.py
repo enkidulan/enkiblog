@@ -2,6 +2,7 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.response import Response
 from pyramid.view import view_config
 from sqlalchemy import func
+from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 from websauna.system.core.views.notfound import notfound
 
@@ -40,7 +41,8 @@ class VistorsResources:
 
         # import pdb; pdb.set_trace()
 
-        post_subquery = self.posts_query.subquery('post_subquery')
+        posts_query = self.posts_query.options(joinedload('tags'))
+        post_subquery = posts_query.subquery('post_subquery')
 
         # TODO: investigate case - probably after union issue
         # XXX: actually important issue - need to be fixed
@@ -53,13 +55,20 @@ class VistorsResources:
         ).subquery('neighborhood')
         neighbors = dbsession.query(neighborhood).filter(
             neighborhood.c.current == slug).subquery('neighbors')
-        query_post = dbsession.query(models.Post).filter(models.Post.slug == neighbors.c.current)
+        query_post = posts_query.filter(models.Post.slug == neighbors.c.current)
         posts = query_post.join(neighbors, neighbors.c.current == models.Post.slug)
-        post, slug_prev, slug_next = posts.add_columns(neighbors.c.prev, neighbors.c.next).one()
+
+
+        # TODO: .one() doesn't work - investigate
+        result = posts.add_columns(neighbors.c.prev, neighbors.c.next).first()
+        if result is None:
+            raise NoResultFound()
+        post, slug_prev, slug_next =  result
 
         return {
-            "project": "enkiblog",
+            'project': 'enkiblog',
             'post': post,
+            'tags': post.tags,
             'prev_link': slug_prev and self.request.route_url("post", slug=slug_prev),
             'next_link': slug_next and self.request.route_url("post", slug=slug_next),
         }

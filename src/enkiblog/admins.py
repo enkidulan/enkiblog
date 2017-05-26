@@ -34,3 +34,18 @@ class MediaAdmin(ModelAdmin):
 
         def get_title(self):
             return self.get_object().title
+
+
+@model_admin(traverse_id="tags")
+class TagAdmin(ModelAdmin):
+    title = "Tags"
+
+    singular_name = "tag"
+    plural_name = "tags"
+
+    model = models.Tag
+
+    class Resource(ModelAdmin.Resource):
+
+        def get_title(self):
+            return self.get_object().title

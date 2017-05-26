@@ -2,15 +2,15 @@
 
 [includes]
 include_ini_files =
-    ${config_file:include_ini_file}
+    ${:include_ini_file}
     resource://enkiblog/conf/base.ini
     resource://websauna/conf/base.ini
 
 [app:main]
-websauna.site_id = ${config_file:site_id}
-websauna.site_email_prefix = ${config_file:site_email_prefix}
-sqlalchemy.url = ${config_file:sqlalchemy_url}
-websauna.secrets_file = ${config_file:websauna_secrets_file}
+websauna.site_id = ${:site_id}
+websauna.site_email_prefix = ${:site_email_prefix}
+sqlalchemy.url = ${:sqlalchemy_url}
+websauna.secrets_file = ${:websauna_secrets_file}
 
 [alembic]
 # path to migration scripts

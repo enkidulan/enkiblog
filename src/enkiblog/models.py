@@ -22,10 +22,10 @@ def resolve_user_requested_permission_to_states():
 
 class AssociationPostsTags(Base):
     __tablename__ = "association_posts_tags"
-    post_uuid = sa.Column(psql_dialect.UUID, sa.ForeignKey('posts.uuid'), primary_key=True)
-    tag_uuid = sa.Column(psql_dialect.UUID, sa.ForeignKey('tags.uuid'), primary_key=True)
-    post = sa.orm.relationship("Post", back_populates="tags")
-    tag = sa.orm.relationship("Tag", back_populates="posts")
+    post_uuid = sa.Column(psql_dialect.UUID(as_uuid=True), sa.ForeignKey('posts.uuid'), primary_key=True)
+    tag_uuid = sa.Column(psql_dialect.UUID(as_uuid=True), sa.ForeignKey('tags.uuid'), primary_key=True)
+    # post = sa.orm.relationship("Post", back_populates="tags")
+    # tag = sa.orm.relationship("Tag", back_populates="posts")
 
 # association_posts_tags = sa.Table('association_posts_tags', Base.metadata,
 #     sa.Column('post_uuid', psql_dialect.UUID, sa.ForeignKey('posts.uuid')),
@@ -127,7 +127,8 @@ class Post(Base):
     author_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'))
     author = sa.orm.relationship('User')
 
-    tags = sa.orm.relationship('AssociationPostsTags', back_populates="post")
+    tags = sa.orm.relationship(
+        'Tag', secondary=AssociationPostsTags.__tablename__, back_populates="posts")
 
     @property
     def id(self):  # XXX:
@@ -172,10 +173,15 @@ class Tag(Base):
 
     title = sa.Column(sa.String(256), unique=True, nullable=False)
 
-    posts = sa.orm.relationship('AssociationPostsTags', back_populates="tag")
+    posts = sa.orm.relationship(
+        'Post', secondary=AssociationPostsTags.__tablename__, back_populates="tags")
 
     @property
     def id(self):  # XXX:
         return self.uuid
 
+    def __repr__(self):
+        return "#{}: {}".format(self.uuid, self.title)
 
+    def __str__(self):
+        return self.title

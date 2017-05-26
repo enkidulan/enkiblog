@@ -1,5 +1,7 @@
 from collections import namedtuple
 import factory
+from random import randint
+from uuid import uuid4
 from pyramid.threadlocal import get_current_registry
 
 from websauna.system.user import models as ws_models
@@ -93,8 +95,17 @@ class BasePostFactory(BaseFactory):
     body = factory.Faker('paragraphs')
     slug = factory.LazyAttribute(
         lambda obj: slugify(obj.title, models.Post.slug, db_session_proxy))
+    tags = factory.LazyFunction(lambda: [TagFactory() for i in range(randint(1, 6))])
 
 
 class PostFactory(BasePostFactory):
     state = 'public'
     published_at = factory.LazyAttribute(lambda obj: now())
+
+
+class TagFactory(BaseFactory):
+    class Meta:
+        model = models.Tag
+
+    # title = factory.Faker('word')
+    title = factory.LazyAttribute(lambda obj: str(uuid4().hex))  # XXX: !!! see previous
