@@ -54,6 +54,7 @@ setup(
         'serving': [
             'gunicorn',
             'circus',
+            # 'uWSGI',
         ],
         'packaging': [
             'wheel',

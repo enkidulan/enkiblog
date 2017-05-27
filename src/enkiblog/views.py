@@ -1,7 +1,7 @@
 from pyramid.httpexceptions import HTTPFound
 from pyramid.response import Response
 from pyramid.view import view_config
-from sqlalchemy import func
+from sqlalchemy import func, desc
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 from websauna.system.core.views.notfound import notfound
@@ -12,6 +12,29 @@ from enkiblog import models
 @view_config(context=NoResultFound)
 def failed_validation(exc, request):
     return notfound(request)
+
+
+def get_recent_posts(dbsession, posts_query, num=10):
+    return posts_query.options(joinedload('tags')).order_by(models.Post.published_at.desc()).limit(num).all()
+
+
+def get_similar_posts(dbsession, post, posts_query, num=10):
+    f_tag_uuid = models.AssociationPostsTags.tag_uuid
+    f_post_uuid = models.AssociationPostsTags.post_uuid
+
+    post_tags = dbsession.query(f_tag_uuid).filter(
+        f_post_uuid == post.uuid)
+
+    return dbsession.query(models.Post)\
+        .filter(f_post_uuid.in_(posts_query.with_entities(models.Post.uuid)))\
+        .filter(f_post_uuid != post.uuid)\
+        .filter(f_tag_uuid.in_(post_tags))\
+        .filter(f_post_uuid == models.Post.uuid)\
+        .group_by(f_post_uuid, models.Post.uuid)\
+        .order_by(desc(func.count(f_post_uuid)))\
+        .options(joinedload('tags'))\
+        .limit(num)\
+        .all()
 
 
 class VistorsResources:
@@ -39,8 +62,6 @@ class VistorsResources:
         dbsession = self.dbsession
         slug = self.request.matchdict["slug"]
 
-        # import pdb; pdb.set_trace()
-
         posts_query = self.posts_query.options(joinedload('tags'))
         post_subquery = posts_query.subquery('post_subquery')
 
@@ -58,12 +79,11 @@ class VistorsResources:
         query_post = posts_query.filter(models.Post.slug == neighbors.c.current)
         posts = query_post.join(neighbors, neighbors.c.current == models.Post.slug)
 
-
         # TODO: .one() doesn't work - investigate
         result = posts.add_columns(neighbors.c.prev, neighbors.c.next).first()
         if result is None:
             raise NoResultFound()
-        post, slug_prev, slug_next =  result
+        post, slug_prev, slug_next = result
 
         return {
             'project': 'enkiblog',
@@ -71,6 +91,8 @@ class VistorsResources:
             'tags': post.tags,
             'prev_link': slug_prev and self.request.route_url("post", slug=slug_prev),
             'next_link': slug_next and self.request.route_url("post", slug=slug_next),
+            'recent': get_recent_posts(dbsession, self.posts_query),
+            'similar': get_similar_posts(dbsession, post, self.posts_query),
         }
 
 
