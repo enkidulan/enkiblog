@@ -17,6 +17,8 @@ class Initializer(websauna.system.Initializer):
     def configure_static(self):
         """Configure static asset serving and cache busting."""
         super(Initializer, self).configure_static()
+        # custom widget static view
+        self.static_asset_policy.add_static_view('deform-custom-widget-static', 'enkiblog.deform_widgets:static')
 
         self.config.registry.static_asset_policy.add_static_view('enkiblog-static', 'enkiblog:static')
 
@@ -43,13 +45,10 @@ class Initializer(websauna.system.Initializer):
         self.config.scan(views)
 
     def configure_models(self):
-        """Register the models of this application."""
         from . import models
         self.config.scan(models)
 
     def configure_model_admins(self):
-        """Register the models of this application."""
-
         # Call parent which registers user and group admins
         super(Initializer, self).configure_model_admins()
 
@@ -59,30 +58,21 @@ class Initializer(websauna.system.Initializer):
         from . import adminviews
         self.config.scan(adminviews)
 
-    # def configure_database(self):
-    #     """Configure database.
+    def configure_forms(self):
+        super().configure_forms()
 
-    #     * Set up base model
+        # from websauna.system.form.resources import DefaultFormResources
+        from websauna.system.form.interfaces import IFormResources
+        from websauna.system.form.deform import configure_zpt_renderer
 
-    #     * Set up mechanism to create database session for requests
+        # Make Deform widgets aware of our widget template paths
+        configure_zpt_renderer(["enkiblog.deform_widgets:templates"])
+        form_resources = self.config.registry.getUtility(IFormResources).get_default_resources()
+        form_resources['ckeditor'] = {None: {
+            'js': 'enkiblog.deform_widgets:static/ckeditor/ckeditor.js',
+            'css': 'enkiblog.deform_widgets:static/ckeditor/contents.css',
+        }}
 
-    #     * Set up transaction machinery
-
-    #     Calls py:func:`websauna.system.model.meta.includeme`.
-
-    #     """
-    #     # super().configure_database()
-
-    #     self.config.include("pyramid_tm")
-    #     self.config.include(".model.meta")
-    #     from pyramid.interfaces import IRequest
-    #     from websauna.system.model.interfaces import ISQLAlchemySessionFactory
-    #     from enkiblog.tests.fakefactory import create_test_dbsession
-
-    #     self.config.registry.registerAdapter(
-    #         factory=create_test_dbsession,
-    #         required=(IRequest,),
-    #         provided=ISQLAlchemySessionFactory)
 
     def run(self):
         self.configure_workflow()

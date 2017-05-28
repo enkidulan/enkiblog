@@ -25,7 +25,7 @@
             </uk>
         </div>
         <div id="post-body">
-            {{post.body}}
+            {{post.body|safe}}
         </div>
     </article>
 
@@ -81,3 +81,12 @@
     </div>
 
 {% endblock %}
+
+
+{% block extra_body_end %}{{ super() }}
+  <script type="text/javascript">
+    (function($){
+        hljs.initHighlightingOnLoad();
+    })(jQuery);
+  </script>
+{% endblock extra_body_end %}

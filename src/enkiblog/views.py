@@ -42,6 +42,7 @@ class VistorsResources:
         self.request = request
         self.dbsession = request.dbsession
         # self.posts_query = self.dbsession.query(models.Post).filter_by(state='published')
+        # TODO: make it sense to switch to only published posts? ^
         self.posts_query = models.Post.acl_aware_listing_query(
             dbsession=self.dbsession,
             effective_principals=request.effective_principals,

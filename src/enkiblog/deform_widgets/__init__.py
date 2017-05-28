@@ -1,0 +1,39 @@
+import json
+from deform.widget import TextInputWidget, null
+
+
+class CKEditorWidget(TextInputWidget):
+
+    readonly_template = 'readonly/ckeditor'
+    delayed_load = False
+    strip = True
+    template = 'ckeditor'
+    requirements = (('ckeditor', None), )
+
+    #: XXX Default options passed to TinyMCE. Customise by using :attr:`options`.
+    default_options = (('height', 240),
+                       ('width', 0),
+                       ('skin', 'lightgray'),
+                       ('theme', 'modern'),
+                       ('mode', 'exact'),
+                       ('strict_loading_mode', True),
+                       ('theme_advanced_resizing', True),
+                       ('theme_advanced_toolbar_align', 'left'),
+                       ('theme_advanced_toolbar_location', 'top'))
+    #: Options to pass to TinyMCE that will override :attr:`default_options`.
+    options = None
+
+    def serialize(self, field, cstruct, **kw):
+        if cstruct in (null, None):
+            cstruct = ''
+
+        readonly = kw.get('readonly', self.readonly)
+        template = self.readonly_template if readonly else self.template
+
+        options = dict(self.default_options)
+        options_overrides = dict(kw.get('options', self.options or {}))
+        options.update(options_overrides)
+        kw['ckeditor_options'] = json.dumps(options)[1:-1]
+
+        values = self.get_template_values(field, cstruct, kw)
+        return field.renderer(template, **values)

@@ -5,6 +5,8 @@ The include location of this template may alter between ``<head>`` and the end o
 
 <script src="{{ 'websauna.system:static/jquery-2.0.3.min.js'|static_url }}"></script>
 <script src="{{ 'enkiblog:static/bootstrap-3.3.7-dist/js/bootstrap.min.js'|static_url }}"></script>
+<!-- XXX: replace with internal -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js"></script>
 
 {# Pull JS for widgets #}
 {% if request.on_demand_resource_renderer %}
