@@ -159,7 +159,8 @@ class Media(Base):
 
     state = sa.Column(sa.Text(), nullable=False, default="draft")
 
-    author = sa.Column(sa.String(256), nullable=True)
+    author_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'))
+    author = sa.orm.relationship('User')
 
     @property
     def id(self):  # XXX:

@@ -39,7 +39,7 @@ class Initializer(websauna.system.Initializer):
         """
         # We override this method, so that we route home to our home screen, not Websauna default one
         self.config.add_route('home', '/')
-        self.config.add_route('post', '/post/{slug}')
+        self.config.add_route('post', '/programming/{slug}')
         self.config.add_route('media', '/media/{slug}')
         from . import views
         self.config.scan(views)

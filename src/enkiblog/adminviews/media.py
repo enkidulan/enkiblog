@@ -35,7 +35,7 @@ class MediaSchema(CSRFSchema):
 
     descriptions = colander.SchemaNode(
         colander.String(),
-        required=True,
+        required=False,
         widget=deform.widget.TextAreaWidget(),)
 
     blob = colander.SchemaNode(

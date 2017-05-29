@@ -19,6 +19,7 @@ def get_recent_posts(dbsession, posts_query, num=10):
 
 
 def get_similar_posts(dbsession, post, posts_query, num=10):
+    # simply finds other posts with common most tags
     f_tag_uuid = models.AssociationPostsTags.tag_uuid
     f_post_uuid = models.AssociationPostsTags.post_uuid
 
@@ -98,7 +99,7 @@ class VistorsResources:
 
 
 @view_config(route_name='media')
-def favicon_view(context, request):
+def media_view(context, request):
     query = request.dbsession.query(models.Media).filter_by(
         state='published', slug=request.matchdict["slug"])
     obj = query.one()
