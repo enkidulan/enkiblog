@@ -34,6 +34,8 @@ setup(
         'python-slugify',
         'repoze.workflow',
         'zc.buildout',
+        'babel',
+        'gunicorn',
     ],
     extras_require={
         'test': [
