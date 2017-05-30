@@ -28,6 +28,7 @@
           jqoid_preload.remove();
           CKEDITOR.replace( '${oid}', {
               language: '<tal:block i18n:translate="language-code">en</tal:block>',
+              <tal:block condition="ckeditor_options">${ckeditor_options},</tal:block>
           });
           // tinyMCE.init({
           //   body_class: 'form-control',

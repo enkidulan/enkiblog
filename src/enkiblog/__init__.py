@@ -19,8 +19,7 @@ class Initializer(websauna.system.Initializer):
         super(Initializer, self).configure_static()
         # custom widget static view
         self.static_asset_policy.add_static_view('deform-custom-widget-static', 'enkiblog.deform_widgets:static')
-
-        self.config.registry.static_asset_policy.add_static_view('enkiblog-static', 'enkiblog:static')
+        self.static_asset_policy.add_static_view('enkiblog-static', 'enkiblog:static')
 
     def configure_templates(self):
         """Include our package templates folder in Jinja 2 configuration."""
@@ -33,10 +32,6 @@ class Initializer(websauna.system.Initializer):
         search_templates(name='.xml')  # Sitemap and misc XML files (if any)
 
     def configure_views(self):
-        """Configure views for your application.
-
-        Let the config scanner to pick ``@simple_route`` definitions from scanned modules. Alternative you can call ``config.add_route()`` and ``config.add_view()`` here.
-        """
         # We override this method, so that we route home to our home screen, not Websauna default one
         self.config.add_route('home', '/')
         self.config.add_route('post', '/programming/{slug}')
@@ -58,6 +53,22 @@ class Initializer(websauna.system.Initializer):
         from . import adminviews
         self.config.scan(adminviews)
 
+    def create_static_asset_policy(self):
+        from websauna.system.http.static import StaticAssetPolicy
+        from pyramid.static import QueryStringConstantCacheBuster
+
+        class SimpleStaticAssetPolicy(StaticAssetPolicy):
+            static_version = '2017-05-30'  # TODO: that is stupid - replace with release number or calculate dynamically
+            def add_static_view(self, name: str, path: str):
+                cache_max_age = self.config.registry.settings.get("websauna.cache_max_age_seconds")
+                if cache_max_age:
+                    cache_max_age = int(cache_max_age)
+                self.config.add_static_view(name, path, cache_max_age=cache_max_age)
+                if cache_max_age:
+                    self.config.add_cache_buster(
+                        path, QueryStringConstantCacheBuster(self.static_version))
+        return SimpleStaticAssetPolicy(self.config)
+
     def configure_forms(self):
         super().configure_forms()
 
@@ -72,7 +83,6 @@ class Initializer(websauna.system.Initializer):
             'js': 'enkiblog.deform_widgets:static/ckeditor/ckeditor.js',
             'css': 'enkiblog.deform_widgets:static/ckeditor/contents.css',
         }}
-
 
     def run(self):
         self.configure_workflow()

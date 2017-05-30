@@ -26,6 +26,12 @@ def deferred_tags_widget(node, kw):
         values=vocab, multiple=True, css_class='tags-select2w')
 
 
+@colander.deferred
+def deferred_ckeditor_widget(node, kw):
+    options = {}
+    return CKEditorWidget(options=options)
+
+
 # XXX: don't like this
 post_editable_fields = [
     "title",
@@ -39,7 +45,7 @@ post_editable_fields = [
         colander.String(),
         name="body",
         required=True,
-        widget=CKEditorWidget()),
+        widget=deferred_ckeditor_widget),
     "state",
 ]
 post_viewable_fields = post_editable_fields + [

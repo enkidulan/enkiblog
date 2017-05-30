@@ -11,15 +11,7 @@ class CKEditorWidget(TextInputWidget):
     requirements = (('ckeditor', None), )
 
     #: XXX Default options passed to TinyMCE. Customise by using :attr:`options`.
-    default_options = (('height', 240),
-                       ('width', 0),
-                       ('skin', 'lightgray'),
-                       ('theme', 'modern'),
-                       ('mode', 'exact'),
-                       ('strict_loading_mode', True),
-                       ('theme_advanced_resizing', True),
-                       ('theme_advanced_toolbar_align', 'left'),
-                       ('theme_advanced_toolbar_location', 'top'))
+    default_options = []
     #: Options to pass to TinyMCE that will override :attr:`default_options`.
     options = None
 
