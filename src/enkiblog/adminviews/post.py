@@ -35,7 +35,10 @@ def deferred_ckeditor_widget(node, kw):
 # XXX: don't like this
 post_editable_fields = [
     "title",
-    "description",
+    colander.SchemaNode(
+        colander.String(),
+        name="description",
+        required=True),
     colander.SchemaNode(
         UUIDModelSet(model=Tag, match_column="uuid"),
         name='tags',

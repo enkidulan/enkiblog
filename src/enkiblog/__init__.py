@@ -24,12 +24,12 @@ class Initializer(websauna.system.Initializer):
     def configure_templates(self):
         """Include our package templates folder in Jinja 2 configuration."""
         super(Initializer, self).configure_templates()
-        search_templates = partial(
+        add_templates = partial(
             self.config.add_jinja2_search_path, 'enkiblog:templates', prepend=True)
 
-        search_templates(name='.html')  # HTML templates for pages
-        search_templates(name='.txt')  # Plain text email templates (if any)
-        search_templates(name='.xml')  # Sitemap and misc XML files (if any)
+        add_templates(name='.html')  # HTML templates for pages
+        add_templates(name='.txt')  # Plain text email templates (if any)
+        add_templates(name='.xml')  # Sitemap and misc XML files (if any)
 
     def configure_views(self):
         # We override this method, so that we route home to our home screen, not Websauna default one

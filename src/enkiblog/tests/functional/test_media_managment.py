@@ -1,93 +1,28 @@
-import transaction
-from uuid import uuid4
+import pytest
 
 
-def test_create_post(site, navigator, admin_user, fakefactory, dbsession):
+@pytest.fixture()
+def media_crud_tests(dbsession, fakefactory, site, navigator, admin_user):
+    from enkiblog.tests.utils import CRUDBasicTest
+    return CRUDBasicTest(
+        fakefactory.MediaFactory, site.admin_menu.media, navigator, dbsession, admin_user)
 
-    post = fakefactory.PostFactory.build()
-    with transaction.manager:
-        tags = fakefactory.TagFactory.create_batch(size=4)
-        dbsession.expunge_all()
 
-    navigator = navigator(user=admin_user)
+def test_create(media_crud_tests, fakefactory, dbsession):
 
-    navigator.submit(
-        site.admin_menu.posts.add_post_page.add_post_form,
-        data={
-            "title": post.title,
-            "tags": [i.title for i in tags],
-            "descriptions": post.description,
-            "body": post.body},
-        status='success',
+    media_crud_tests.create(
+        fields=("blob", "description"),
+        submit_kw={'status': 'success'}
     )
 
 
-def test_post_create_validation(site, navigator, admin_user, fakefactory):
+def test_edit(media_crud_tests, fakefactory, dbsession):
 
-    post = fakefactory.PostFactory.build()
-
-    navigator = navigator(user=admin_user)
-    navigator.submit(
-        site.admin_menu.posts.add_post_page.add_post_form,
-        data={
-            "title": '',
-            "descriptions": post.description,
-            "body": post.body},
-        status='validation_error',
+    media_crud_tests.edit(
+        fields=("blob", "description"),
+        submit_kw={'status': 'success'}
     )
 
 
-def test_delete_post(browser, navigator, admin_user, site, dbsession, fakefactory):
-
-    with transaction.manager:
-        media = fakefactory.PostFactory()
-    navigator = navigator(user=admin_user)
-
-    listing_page = navigator.navigate(site.admin_menu.posts)
-
-    assert listing_page.items == 1
-    # assert browser.is_text_present("Total 1 item")
-
-    listing_page.delete(media)
-    # browser.find_by_css('.btn-crud-listing-delete').click()
-    # assert browser.is_text_present("Confirm delete")
-    # browser.find_by_css('#btn-delete-yes').click()
-    # assert browser.is_text_present("Deleted")
-
-    assert listing_page.items == 0
-    # navigator.navigate(site.admin_menu.posts)
-    # assert browser.is_text_present("No items")
-
-
-# def test_list_posts(browser, site, navigator, admin_user, fakefactory, dbsession):
-
-#     with transaction.manager:
-#         fakefactory.PostFactory.create_batch(size=30)
-
-#     navigator = navigator(user=admin_user)
-#     navigator.navigate(site.admin_menu.posts)
-#     assert browser.is_text_present("Total 30 items")
-
-
-def test_edit_post(browser, site, navigator, admin_user, fakefactory, dbsession):
-    with transaction.manager:
-        media = fakefactory.PostFactory()
-        dbsession.expunge_all()
-
-    navigator = navigator(user=admin_user)
-    media = navigator.navigate(site.admin_menu.posts, obj=media)
-
-    with media.edit(status='success') as media_form:
-        media_form.submit(
-            data={},
-        )
-
-    # navigator.browser.find_by_css('.btn-crud-listing-edit').click()
-    # assert browser.is_text_present("Editing")
-
-    # text = uuid4().hex
-    # browser.fill("title", text)
-    # browser.find_by_name("save").click()
-
-    # assert browser.is_text_present("Changes saved.")
-    # assert browser.is_text_present(text)
+def test_delete(media_crud_tests):
+    media_crud_tests.delete()

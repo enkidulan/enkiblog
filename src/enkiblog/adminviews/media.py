@@ -1,23 +1,12 @@
-"""Admin interface views and buttons."""
-
 import colander
 import deform
 
 from websauna.system.core.viewconfig import view_overrides
 from websauna.system.admin import views as adminviews
-from websauna.system.form.csrf import CSRFSchema
-from websauna.system.form.resourceregistry import ResourceRegistry
-from websauna.system.form.schema import objectify, dictify
 from deform.schema import FileData
-from websauna.system.form.sqlalchemy import UUIDForeignKeyValue, UUIDModelSet
 
-from sqlalchemy.orm.collections import InstrumentedList
-
-from enkiblog.admins import PostAdmin, MediaAdmin
-from enkiblog.models import Post, Media, Tag, AssociationPostsTags
-from enkiblog.utils import slugify
-from websauna.utils.slug import uuid_to_slug
-
+from enkiblog.admins import MediaAdmin
+from websauna.system.crud.formgenerator import SQLAlchemyFormGenerator
 
 
 class MemoryTmpStore(dict):
@@ -28,37 +17,24 @@ class MemoryTmpStore(dict):
         return None
 
 
-tmpstore = MemoryTmpStore()
-
-
-class MediaSchema(CSRFSchema):
-
-    descriptions = colander.SchemaNode(
-        colander.String(),
-        required=False,
-        widget=deform.widget.TextAreaWidget(),)
-
-    blob = colander.SchemaNode(
-        FileData(),
-        required=True,
-        widget=deform.widget.FileUploadWidget(tmpstore))
-
-    def dictify(self, obj) -> dict:
-        appstruct = dictify(self, obj)
-        return appstruct
-
-    def objectify(self, appstruct: dict, obj):
-        objectify(self, appstruct, obj)
+tmpstore = MemoryTmpStore()  # XXX
 
 
 @view_overrides(context=MediaAdmin)
 class MediaAdd(adminviews.Add):
+    fields = (
+        colander.SchemaNode(
+            colander.String(),
+            name='description',
+            required=False),
+        colander.SchemaNode(
+            FileData(),
+            name='blob',
+            required=True,
+            widget=deform.widget.FileUploadWidget(tmpstore))
+    )
 
-    def get_form(self):
-        schema = MediaSchema().bind(request=self.request)
-        form = deform.Form(
-            schema, buttons=self.get_buttons(), resource_registry=ResourceRegistry(self.request))
-        return form
+    form_generator = SQLAlchemyFormGenerator(includes=fields)
 
     def add_object(self, obj):
 

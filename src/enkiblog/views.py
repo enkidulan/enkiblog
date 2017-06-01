@@ -28,9 +28,9 @@ def get_similar_posts(dbsession, post, posts_query, num=10):
 
     return dbsession.query(models.Post)\
         .filter(f_post_uuid.in_(posts_query.with_entities(models.Post.uuid)))\
-        .filter(f_post_uuid != post.uuid)\
         .filter(f_tag_uuid.in_(post_tags))\
         .filter(f_post_uuid == models.Post.uuid)\
+        .filter(f_post_uuid != post.uuid)\
         .group_by(f_post_uuid, models.Post.uuid)\
         .order_by(desc(func.count(f_post_uuid)))\
         .options(joinedload('tags'))\

@@ -24,13 +24,6 @@ class AssociationPostsTags(Base):
     __tablename__ = "association_posts_tags"
     post_uuid = sa.Column(psql_dialect.UUID(as_uuid=True), sa.ForeignKey('posts.uuid'), primary_key=True)
     tag_uuid = sa.Column(psql_dialect.UUID(as_uuid=True), sa.ForeignKey('tags.uuid'), primary_key=True)
-    # post = sa.orm.relationship("Post", back_populates="tags")
-    # tag = sa.orm.relationship("Tag", back_populates="posts")
-
-# association_posts_tags = sa.Table('association_posts_tags', Base.metadata,
-#     sa.Column('post_uuid', psql_dialect.UUID, sa.ForeignKey('posts.uuid')),
-#     sa.Column('tag_uuid', psql_dialect.UUID, sa.ForeignKey('tags.uuid'))
-# )
 
 
 class Post(Base):

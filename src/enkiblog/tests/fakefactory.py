@@ -11,6 +11,8 @@ from websauna.utils.time import now
 from enkiblog import models
 from enkiblog.utils import slugify
 
+import os.path
+
 
 class DBSessionProxy:
     session = None
@@ -92,7 +94,7 @@ class BasePostFactory(BaseFactory):
 
     title = factory.Faker('catch_phrase')
     description = factory.Faker('text')
-    body = factory.Faker('paragraphs')
+    body = factory.Faker('text')
     slug = factory.LazyAttribute(
         lambda obj: slugify(obj.title, models.Post.slug, db_session_proxy))
     tags = factory.LazyFunction(lambda: [TagFactory() for i in range(randint(1, 6))])
@@ -109,3 +111,14 @@ class TagFactory(BaseFactory):
 
     # title = factory.Faker('word')
     title = factory.LazyAttribute(lambda obj: str(uuid4().hex))  # XXX: !!! see previous
+
+
+class MediaFactory(BaseFactory):
+    class Meta:
+        model = models.Media
+
+    # XXX: will break in case of many files
+    description = factory.Faker('slug')
+    title = str(__file__)
+    slug = factory.Faker('slug')
+    blob = bytes(os.path.abspath(__file__), 'utf-8')

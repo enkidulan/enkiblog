@@ -16,18 +16,19 @@ class Navigator:
         self.login_form.navigate(navigator=self)
         self.login_form.submit(navigator=self, data={'user': self.user})
 
-    def navigate(self, page, check_if_navigated=True):
+    def navigate(self, page, check_if_navigated=True, obj=None):
         if self.user:
             self.ensure_user_is_logged_in()
-        page._navigate(navigator=self, check_if_navigated=check_if_navigated)
+        page._navigate(navigator=self, check_if_navigated=check_if_navigated, obj=obj)
+        return page
 
-    def submit(self, form, data, status='success'):
+    def submit(self, form, data, status='success', obj=None):
         # TODO: move out?
         # assert form.type == 'form'
         assert isinstance(data, dict)
 
-        form.submit(navigator=self, data=data)
-        getattr(form, 'check_' + status)(navigator=self, data=data)
+        form.submit(navigator=self, data=data, obj=obj)
+        getattr(form, 'check_' + status)(navigator=self, data=data, obj=obj)
 
         # if status == 'success':
         #     form.parrent.pages.add()
@@ -48,11 +49,11 @@ class Navigatable:
     def navigate(self, navigator):
         raise
 
-    def _navigate(self, navigator, check_if_navigated=True):
+    def _navigate(self, navigator, check_if_navigated=True, obj=None):
         # if self.is_current_context(navigator, timeout=0.1):
         #     return
         if self.parent:
-            navigator.navigate(self.parent, check_if_navigated=check_if_navigated)
-        self.navigate(navigator)
+            navigator.navigate(self.parent, check_if_navigated=check_if_navigated, obj=obj)
+        self.navigate(navigator, obj=obj)
         if check_if_navigated:
-            assert self.is_current_context(navigator)
+            assert self.is_current_context(navigator, obj=obj)
