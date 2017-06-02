@@ -119,6 +119,6 @@ class MediaFactory(BaseFactory):
 
     # XXX: will break in case of many files
     description = factory.Faker('slug')
-    title = str(__file__)
+    title = str(__file__.rsplit(os.path.sep, 1)[-1])
     slug = factory.Faker('slug')
     blob = bytes(os.path.abspath(__file__), 'utf-8')

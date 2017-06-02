@@ -9,7 +9,7 @@ class MediaCRUD(CRUD):
 
     def submit_add_form(self, browser, data):
         browser.fill("description", data['description'])
-        browser.find_by_name("upload")[0].value = data['blob']
+        browser.find_by_name("upload")[0].value = data['blob'].decode('utf-8')
 
     def check_success_add_form(self, browser, data, check_success_message):
         # After login we see a profile link to our profile
