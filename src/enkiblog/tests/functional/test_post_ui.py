@@ -15,21 +15,7 @@ def test_on_post_page_user_sees_all_info(
     for tag in post.tags:
         assert browser.is_text_present(tag.title)
     # TODO: add checking of all data
-    assert browser.url.endswith('/post/' + post.slug)
-
-
-def test_on_home_page_user_is_redirected_to_newest_post(
-        browser, site, navigator, fakefactory, dbsession):
-
-    with transaction.manager:
-        fakefactory.PostFactory.create_batch(2)
-        post = fakefactory.PostFactory()
-        dbsession.expunge_all()
-
-    navigator().navigate(site, check_if_navigated=False)
-
-    assert browser.is_text_present(post.title)
-    assert browser.url.endswith('/post/' + post.slug)
+    assert browser.url.endswith('/programming/' + post.slug)
 
 
 def test_user_doesnt_see_not_published_posts(
@@ -46,7 +32,7 @@ def test_user_doesnt_see_not_published_posts(
     assert not browser.url.endswith(post.slug)
 
     # post is not accessible by url
-    browser.visit(web_server + '/post/' + post.slug)  # XXX: redesign url making func, currently is inflexible
+    browser.visit(web_server + '/programming/' + post.slug)  # XXX: redesign url making func, currently is inflexible
     assert browser.is_text_present('Not found')
 
 

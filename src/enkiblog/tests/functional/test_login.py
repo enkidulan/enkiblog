@@ -1,5 +1,3 @@
-"""An example login test case."""
-
 import transaction
 
 

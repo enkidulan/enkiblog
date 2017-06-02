@@ -13,6 +13,8 @@ from enkiblog import models
 def failed_validation(exc, request):
     return notfound(request)
 
+# TODO: not found return and not raise found leads to different pages - fix that
+
 
 def get_recent_posts(dbsession, posts_query, num=10):
     return posts_query.options(joinedload('tags')).order_by(models.Post.published_at.desc()).limit(num).all()
