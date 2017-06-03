@@ -10,9 +10,9 @@ class CKEditorWidget(TextInputWidget):
     template = 'ckeditor'
     requirements = (('ckeditor', None), )
 
-    #: XXX Default options passed to TinyMCE. Customise by using :attr:`options`.
-    default_options = []
-    #: Options to pass to TinyMCE that will override :attr:`default_options`.
+    default_options = {
+        'height': 500,
+    }
     options = None
 
     def serialize(self, field, cstruct, **kw):
