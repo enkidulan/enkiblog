@@ -1,13 +1,13 @@
-"""initial
+"""crap
 
-Revision ID: c3ef840de9b6
+Revision ID: 9444e4934401
 Revises: 
-Create Date: 2017-05-18 11:50:22.402885
+Create Date: 2017-06-02 15:32:58.624671
 
 """
 
 # revision identifiers, used by Alembic.
-revision = 'c3ef840de9b6'
+revision = '9444e4934401'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -32,21 +32,6 @@ def upgrade():
     sa.Column('group_data', websauna.system.model.columns.JSONB(), nullable=True),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_group')),
     sa.UniqueConstraint('name', name=op.f('uq_group_name'))
-    )
-    op.create_table('media',
-    sa.Column('uuid', postgresql.UUID(as_uuid=True), nullable=False),
-    sa.Column('created_at', websauna.system.model.columns.UTCDateTime(), nullable=False),
-    sa.Column('published_at', websauna.system.model.columns.UTCDateTime(), nullable=True),
-    sa.Column('updated_at', websauna.system.model.columns.UTCDateTime(), nullable=True),
-    sa.Column('title', sa.String(length=256), nullable=False),
-    sa.Column('mimetype', sa.String(length=256), nullable=True),
-    sa.Column('description', sa.Text(), nullable=False),
-    sa.Column('slug', sa.String(length=256), nullable=False),
-    sa.Column('blob', postgresql.BYTEA(), nullable=True),
-    sa.Column('state', sa.Text(), nullable=False),
-    sa.Column('author', sa.String(length=256), nullable=True),
-    sa.PrimaryKeyConstraint('uuid', name=op.f('pk_media')),
-    sa.UniqueConstraint('slug', name=op.f('uq_media_slug'))
     )
     op.create_table('tags',
     sa.Column('uuid', postgresql.UUID(as_uuid=True), nullable=False),
@@ -83,6 +68,22 @@ def upgrade():
     sa.UniqueConstraint('email', name=op.f('uq_users_email')),
     sa.UniqueConstraint('username', name=op.f('uq_users_username'))
     )
+    op.create_table('media',
+    sa.Column('uuid', postgresql.UUID(as_uuid=True), nullable=False),
+    sa.Column('created_at', websauna.system.model.columns.UTCDateTime(), nullable=False),
+    sa.Column('published_at', websauna.system.model.columns.UTCDateTime(), nullable=True),
+    sa.Column('updated_at', websauna.system.model.columns.UTCDateTime(), nullable=True),
+    sa.Column('title', sa.String(length=256), nullable=False),
+    sa.Column('mimetype', sa.String(length=256), nullable=True),
+    sa.Column('description', sa.Text(), nullable=False),
+    sa.Column('slug', sa.String(length=256), nullable=False),
+    sa.Column('blob', postgresql.BYTEA(), nullable=True),
+    sa.Column('state', sa.Text(), nullable=False),
+    sa.Column('author_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['author_id'], ['users.id'], name=op.f('fk_media_author_id_users')),
+    sa.PrimaryKeyConstraint('uuid', name=op.f('pk_media')),
+    sa.UniqueConstraint('slug', name=op.f('uq_media_slug'))
+    )
     op.create_table('posts',
     sa.Column('uuid', postgresql.UUID(as_uuid=True), nullable=False),
     sa.Column('created_at', websauna.system.model.columns.UTCDateTime(), nullable=False),
@@ -107,8 +108,8 @@ def upgrade():
     sa.PrimaryKeyConstraint('id', name=op.f('pk_usergroup'))
     )
     op.create_table('association_posts_tags',
-    sa.Column('post_uuid', postgresql.UUID(), nullable=False),
-    sa.Column('tag_uuid', postgresql.UUID(), nullable=False),
+    sa.Column('post_uuid', postgresql.UUID(as_uuid=True), nullable=False),
+    sa.Column('tag_uuid', postgresql.UUID(as_uuid=True), nullable=False),
     sa.ForeignKeyConstraint(['post_uuid'], ['posts.uuid'], name=op.f('fk_association_posts_tags_post_uuid_posts')),
     sa.ForeignKeyConstraint(['tag_uuid'], ['tags.uuid'], name=op.f('fk_association_posts_tags_tag_uuid_tags')),
     sa.PrimaryKeyConstraint('post_uuid', 'tag_uuid', name=op.f('pk_association_posts_tags'))
@@ -121,9 +122,9 @@ def downgrade():
     op.drop_table('association_posts_tags')
     op.drop_table('usergroup')
     op.drop_table('posts')
+    op.drop_table('media')
     op.drop_table('users')
     op.drop_table('user_activation')
     op.drop_table('tags')
-    op.drop_table('media')
     op.drop_table('group')
     # ### end Alembic commands ###
