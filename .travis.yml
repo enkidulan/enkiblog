@@ -30,5 +30,4 @@ before_script:
 script:
 - bin/test
 after_success:
-- ssh blog@enkidulan.tk -i kittycat.jpg 'cd enkiblog && git pull && bin/buildout
-  -Nv && bin/ws-alembic -c config.ini -x packages=all upgrade head && bin/circusctl --endpoint ipc://$PWD/endpoint.sock restart'
+- ssh blog@enkidulan.tk -i kittycat.jpg 'sh ./enkiblog_upgrade.sh'
