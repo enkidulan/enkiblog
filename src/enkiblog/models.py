@@ -104,7 +104,7 @@ class Post(Base):
     uuid = sa.Column(psql_dialect.UUID(as_uuid=True), default=uuid4, primary_key=True)
 
     created_at = sa.Column(UTCDateTime, default=now, nullable=False)
-    published_at = sa.Column(UTCDateTime, default=None, nullable=True)
+    published_at = sa.Column(UTCDateTime, default=None, nullable=True, index=True)
     updated_at = sa.Column(UTCDateTime, nullable=True, onupdate=now)
 
     title = sa.Column(sa.String(256), nullable=False)
@@ -115,7 +115,7 @@ class Post(Base):
 
     # TODO: move all workflow related to json
     #       sa.Column(NestedMutationDict.as_mutable(psql.JSONB), default=dict)
-    state = sa.Column(sa.Text(), nullable=False, default="private")
+    state = sa.Column(sa.Text(), nullable=False, default="private", index=True)
 
     author_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'))
     author = sa.orm.relationship('User')
