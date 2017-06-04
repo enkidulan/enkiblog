@@ -77,6 +77,7 @@ class PostAdd(adminviews.Add):
 @view_overrides(context=PostAdmin.Resource)
 class PostEdit(adminviews.Edit):
     form_generator = SQLAlchemyFormGenerator(includes=post_viewable_fields)
+    # TODO: on publishing publish all related content
 
 
 @view_overrides(context=PostAdmin.Resource)

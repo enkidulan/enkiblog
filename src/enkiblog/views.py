@@ -102,9 +102,12 @@ class VistorsResources:
 
 @view_config(route_name='media')
 def media_view(context, request):
-    query = request.dbsession.query(models.Media).filter_by(
-        state='published', slug=request.matchdict["slug"])
-    obj = query.one()
+    query = models.Media.acl_aware_listing_query(
+        dbsession=request.dbsession,
+        effective_principals=request.effective_principals,
+        actions=('view',),
+        user=request.user)
+    obj = query.filter_by(slug=request.matchdict["slug"]).one()
     return Response(content_type=obj.mimetype, body=obj.blob)
 
 

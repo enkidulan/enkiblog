@@ -57,7 +57,7 @@ class MediaAdd(adminviews.Add):
 
 @view_overrides(context=MediaAdmin.Resource)
 class MediaEdit(adminviews.Edit):
-    form_generator = SQLAlchemyFormGenerator(includes=fields)
+    form_generator = SQLAlchemyFormGenerator(includes=list(fields) + ['state'])
 
     def get_appstruct(self, form, obj):
         """Turn the object to form editable format."""

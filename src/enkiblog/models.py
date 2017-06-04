@@ -20,14 +20,7 @@ def resolve_user_requested_permission_to_states():
     pass
 
 
-class AssociationPostsTags(Base):
-    __tablename__ = "association_posts_tags"
-    post_uuid = sa.Column(psql_dialect.UUID(as_uuid=True), sa.ForeignKey('posts.uuid'), primary_key=True)
-    tag_uuid = sa.Column(psql_dialect.UUID(as_uuid=True), sa.ForeignKey('tags.uuid'), primary_key=True)
-
-
-class Post(Base):
-    __tablename__ = "posts"
+class ACLMixin:
 
     # TODO: move permissions and roles-users out
     permissions = {
@@ -65,6 +58,7 @@ class Post(Base):
 
     @classmethod
     def acl_aware_listing_query(cls, dbsession, effective_principals, actions, user=None):
+        # TODO: add tests (or is it added ?)
         # TODO: take user from effective_principals
         # !!!: doesn't allow to have localy stored custom acl!!!
         # TODO: make posts objects context factory, move it there
@@ -101,6 +95,16 @@ class Post(Base):
 
         return query
 
+
+class AssociationPostsTags(Base):
+    __tablename__ = "association_posts_tags"
+    post_uuid = sa.Column(psql_dialect.UUID(as_uuid=True), sa.ForeignKey('posts.uuid'), primary_key=True)
+    tag_uuid = sa.Column(psql_dialect.UUID(as_uuid=True), sa.ForeignKey('tags.uuid'), primary_key=True)
+
+
+class Post(Base, ACLMixin):
+    __tablename__ = "posts"
+
     uuid = sa.Column(psql_dialect.UUID(as_uuid=True), default=uuid4, primary_key=True)
 
     created_at = sa.Column(UTCDateTime, default=now, nullable=False)
@@ -134,7 +138,7 @@ class Post(Base):
         return self.title
 
 
-class Media(Base):
+class Media(Base, ACLMixin):
     __tablename__ = "media"
 
     uuid = sa.Column(psql_dialect.UUID(as_uuid=True), default=uuid4, primary_key=True)
@@ -150,7 +154,7 @@ class Media(Base):
 
     blob = sa.Column(psql_dialect.BYTEA)
 
-    state = sa.Column(sa.Text(), nullable=False, default="draft")
+    state = sa.Column(sa.Text(), nullable=False, default="private", index=True)
 
     author_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'))
     author = sa.orm.relationship('User')
