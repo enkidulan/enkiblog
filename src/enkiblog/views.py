@@ -106,3 +106,8 @@ def media_view(context, request):
         state='published', slug=request.matchdict["slug"])
     obj = query.one()
     return Response(content_type=obj.mimetype, body=obj.blob)
+
+
+@view_config(route_name="old_post")
+def old_posts_redirect_view(context, request):
+    return HTTPFound(request.route_url("post", slug=request.matchdict["slug"]))

@@ -34,6 +34,7 @@ class Initializer(websauna.system.Initializer):
     def configure_views(self):
         # We override this method, so that we route home to our home screen, not Websauna default one
         self.config.add_route('home', '/')
+        self.config.add_route('old_post', '/programming/notes-on-web-development-with-python/{slug}')
         self.config.add_route('post', '/programming/{slug}')
         self.config.add_route('media', '/media/{slug}')
         from . import views

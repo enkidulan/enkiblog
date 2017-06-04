@@ -76,7 +76,7 @@ class PostAdd(adminviews.Add):
 
 @view_overrides(context=PostAdmin.Resource)
 class PostEdit(adminviews.Edit):
-    form_generator = SQLAlchemyFormGenerator(includes=post_editable_fields)
+    form_generator = SQLAlchemyFormGenerator(includes=post_viewable_fields)
 
 
 @view_overrides(context=PostAdmin.Resource)
