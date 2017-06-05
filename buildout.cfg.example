@@ -5,3 +5,9 @@ extends =
 
 #[config_file]
 #sqlalchemy_url = postgresql://user:psw@localhost/enkiblog_dev
+
+
+# for production config
+# [backup]
+# to =
+# password =
