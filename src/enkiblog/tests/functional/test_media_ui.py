@@ -6,7 +6,7 @@ def test_media_is_accesible_by_url(
         browser, web_server, site, navigator, fakefactory, dbsession):
 
     with transaction.manager:
-        obj = fakefactory.MediaFactory(state='published')
+        obj = fakefactory.MediaFactory(state='public')
         dbsession.expunge_all()
 
     browser.visit(web_server + '/media/' + obj.slug)
