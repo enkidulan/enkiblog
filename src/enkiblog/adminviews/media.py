@@ -71,6 +71,7 @@ class MediaEdit(adminviews.Edit):
         return appstruct
 
     def save_changes(self, form: deform.Form, appstruct: dict, obj: object):
+        # TODO: do not ovveride slug
 
         marshal_appstruct_for_file_data(appstruct)
         appstruct['author'] = self.request.user

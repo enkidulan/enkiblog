@@ -1,4 +1,3 @@
-from enkiblog import models
 from repoze.workflow import Workflow
 
 
