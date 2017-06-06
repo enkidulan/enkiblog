@@ -88,6 +88,8 @@ class Initializer(websauna.system.Initializer):
     def run(self):
         self.configure_workflow()
         super(Initializer, self).run()
+        self.config.include('pyramid_mako')
+        self.config.include('pyramid_raven')
 
 
 def main(global_config, **settings):

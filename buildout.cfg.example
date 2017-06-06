@@ -5,6 +5,7 @@ extends =
 
 #[config_file]
 #sqlalchemy_url = postgresql://user:psw@localhost/enkiblog_dev
+#raven_dsn =
 
 
 # for production config

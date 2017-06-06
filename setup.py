@@ -36,6 +36,8 @@ setup(
         'zc.buildout',
         'babel',
         'gunicorn',
+        'pyramid_raven',
+        'pyramid_mako',
     ],
     extras_require={
         'test': [
