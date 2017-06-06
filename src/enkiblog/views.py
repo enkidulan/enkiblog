@@ -8,6 +8,19 @@ from websauna.system.core.views.notfound import notfound
 
 from enkiblog import models
 
+from pyramid.events import subscriber
+from websauna.system.core.events import InternalServerError
+from websauna.system.core.loggingcapture import get_logging_user_context
+
+
+# https://github.com/websauna/websauna.sentry/blob/master/websauna/sentry/subscribers.py#L14
+@subscriber(InternalServerError)
+def notify_raven(event):
+    request = event.request
+    user_context = get_logging_user_context(request)
+    request.raven.user_context(user_context)
+    request.raven.captureException()
+
 
 @view_config(context=NoResultFound)
 def failed_validation(exc, request):
