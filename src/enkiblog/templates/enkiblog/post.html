@@ -1,5 +1,9 @@
 {% extends "enkiblog/base.html" %}
 
+{% block meta %}{{ super() }}
+    {{ panel('meta_tags', context=post) }}
+{% endblock meta %}
+
 {% block article %}
 
     <article>

@@ -1,0 +1,16 @@
+<title>${title} — ${site_name}</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="description" content="${description}">
+<meta name="keywords" content="${tags}">
+<meta content="summary" name="twitter:card">
+<meta content="${title}" name="twitter:title">
+<meta content="${site_name}" property="og:site_name">
+<meta content="${title}" property="og:title">
+<meta content="website" property="og:type">
+<meta content="${description}" name="twitter:description">
+<meta content="${request.url}" name="twitter:url">
+<meta content="${description}" property="og:description">
+<meta content="${request.url}" property="og:url">
+<meta content="${request.static_url('enkiblog:static/logo.png')}" name="twitter:image">
+<meta content="${request.static_url('enkiblog:static/logo.png')}" property="og:image">
+<meta content="image/png" property="og:image:type">

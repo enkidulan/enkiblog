@@ -1,3 +1,4 @@
+import os.path
 from pyramid.httpexceptions import HTTPFound
 from pyramid.response import Response
 from pyramid.view import view_config
@@ -12,6 +13,27 @@ from pyramid.events import subscriber
 from websauna.system.core.events import InternalServerError
 from websauna.system.core.loggingcapture import get_logging_user_context
 from pyramid_layout.panel import panel_config
+
+dummy_tuple = tuple()
+
+
+_icon = open(os.path.join(os.path.dirname(__file__), 'static', 'favicon.ico'), 'rb').read()
+_fi_response = Response(content_type='image/x-icon', body=_icon)
+
+
+@view_config(name='favicon.ico')
+def favicon_view(context, request):
+    return _fi_response
+
+
+@panel_config('meta_tags', renderer='templates/enkiblog/meta_tags.pt')
+def meta_tags(context, request):
+    return {
+        'tags': ','.join(map(str, getattr(context, 'tags', dummy_tuple))),
+        'title': str(context),
+        'description': context.description,
+        'site_name': 'Enkidu\'s Blog',  # XXX: get from settings
+    }
 
 
 @panel_config('recent_items_widget', renderer='templates/enkiblog/listing_items_widget.pt')
