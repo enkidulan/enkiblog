@@ -19,15 +19,6 @@
       <ul class="nav navbar-nav navbar-right site-nav-user-actions">
         {% if request.user %}
 
-          {% if request.has_permission('shell') and 'notebook' in request.registry.features %}
-            <li>
-              <a id="nav-superuser" href="{{'admin_shell'|route_url}}">
-                <i class="fa fa-terminal"></i>
-                Shell
-              </a>
-            </li>
-          {% endif %}
-
           {# We have admin interface for this site #}
           {% if request.admin %}
             {# User has permission to view admin root #}
@@ -58,10 +49,9 @@
             </form>
           </li>
         {% else %}
-          <li>
+<!--           <li>
             <a id="nav-sign-up" href="{{'register'|route_url}}">Sign up</a>
-          </li>
-
+          </li> -->
           <li>
             <a id="nav-sign-in" href="{{'login'|route_url}}">Sign in</a>
           </li>
@@ -83,7 +73,7 @@
         </li>
 
         <li>
-          <a class="lead" href="{{'home'|route_url}}">About Me</a>
+          <a class="lead" href="{{ request.route_url('post', slug='about-me') }}">About Me</a>
         </li>
       </ul>
 
