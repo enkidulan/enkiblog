@@ -47,7 +47,7 @@
     /*background-color: rgba(248, 248, 248, 0.78);*/
 }
 
-.sidebar > .panel {
+.sidebar .panel {
     background-color: rgba(247, 242, 236, 0.1);
     border: 1px solid rgba(191, 60, 60, 0.11);
 }

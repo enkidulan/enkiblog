@@ -69,9 +69,13 @@
 
 {% block sidebar %}
 
+<div class="similar">
 {{ panel('similar_items_widget', context=post) }}
+</div>
 
+<div class="recent">
 {{ panel('recent_items_widget', context=post) }}
+</div>
 
 {% endblock %}
 

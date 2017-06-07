@@ -2,7 +2,7 @@
     <div class="panel-heading">
         <h3>${title}</h3>
     </div>
-    <div class="recent list-group">
+    <div class="list-group">
         <a tal:repeat="item items"
            href="${request.route_url('post', slug=item.slug)}"
            class="list-group-item">
