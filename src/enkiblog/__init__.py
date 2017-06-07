@@ -37,6 +37,7 @@ class Initializer(websauna.system.Initializer):
         self.config.add_route('old_post', '/programming/notes-on-web-development-with-python/{slug}')
         self.config.add_route('post', '/programming/{slug}')
         self.config.add_route('media', '/media/{slug}')
+
         from . import views
         self.config.scan(views)
 
@@ -85,11 +86,18 @@ class Initializer(websauna.system.Initializer):
             'css': 'enkiblog.deform_widgets:static/ckeditor/contents.css',
         }}
 
+    def make_overrides(self):
+        self.config.commit()  # there is views overrides in overrides.py
+
+        from . import overrides
+        self.config.scan(overrides)
+
     def run(self):
         self.configure_workflow()
-        super(Initializer, self).run()
         self.config.include('pyramid_mako')
         self.config.include('pyramid_raven')
+        super(Initializer, self).run()
+        self.make_overrides()
 
 
 def main(global_config, **settings):
