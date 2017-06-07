@@ -11,6 +11,53 @@ from enkiblog import models
 from pyramid.events import subscriber
 from websauna.system.core.events import InternalServerError
 from websauna.system.core.loggingcapture import get_logging_user_context
+from pyramid_layout.panel import panel_config
+
+
+@panel_config('recent_items_widget', renderer='templates/enkiblog/listing_items_widget.pt')
+def recent_items_widget(context, request, num=10, title='Recent posts'):
+    posts_query = models.Post.acl_aware_listing_query(
+        dbsession=request.dbsession,
+        effective_principals=request.effective_principals,
+        actions=('view',),
+        user=request.user)
+    items = posts_query\
+        .options(joinedload('tags'))\
+        .order_by(models.Post.published_at.desc())\
+        .limit(num)\
+        .all()
+    return {'items': items, 'title': title}
+
+
+@panel_config('similar_items_widget', renderer='templates/enkiblog/listing_items_widget.pt')
+def similar_items_widget(context, request, num=10, title='Similar posts'):
+    # simply finds other posts with common most tags
+    f_tag_uuid = models.AssociationPostsTags.tag_uuid
+    f_post_uuid = models.AssociationPostsTags.post_uuid
+    dbsession = request.dbsession
+    post = context
+
+    posts_query = models.Post.acl_aware_listing_query(
+        dbsession=dbsession,
+        effective_principals=request.effective_principals,
+        actions=('view',),
+        user=request.user)
+
+    post_tags = dbsession.query(f_tag_uuid).filter(
+        f_post_uuid == post.uuid)
+
+    items = dbsession.query(models.Post)\
+        .filter(f_post_uuid.in_(posts_query.with_entities(models.Post.uuid)))\
+        .filter(f_tag_uuid.in_(post_tags))\
+        .filter(f_post_uuid == models.Post.uuid)\
+        .filter(f_post_uuid != post.uuid)\
+        .group_by(f_post_uuid, models.Post.uuid)\
+        .order_by(desc(func.count(f_post_uuid)))\
+        .options(joinedload('tags'))\
+        .limit(num)\
+        .all()
+
+    return {'items': items, 'title': title}
 
 
 # https://github.com/websauna/websauna.sentry/blob/master/websauna/sentry/subscribers.py#L14
@@ -27,30 +74,6 @@ def failed_validation(exc, request):
     return notfound(request)
 
 # TODO: not found return and not raise found leads to different pages - fix that
-
-
-def get_recent_posts(dbsession, posts_query, num=10):
-    return posts_query.options(joinedload('tags')).order_by(models.Post.published_at.desc()).limit(num).all()
-
-
-def get_similar_posts(dbsession, post, posts_query, num=10):
-    # simply finds other posts with common most tags
-    f_tag_uuid = models.AssociationPostsTags.tag_uuid
-    f_post_uuid = models.AssociationPostsTags.post_uuid
-
-    post_tags = dbsession.query(f_tag_uuid).filter(
-        f_post_uuid == post.uuid)
-
-    return dbsession.query(models.Post)\
-        .filter(f_post_uuid.in_(posts_query.with_entities(models.Post.uuid)))\
-        .filter(f_tag_uuid.in_(post_tags))\
-        .filter(f_post_uuid == models.Post.uuid)\
-        .filter(f_post_uuid != post.uuid)\
-        .group_by(f_post_uuid, models.Post.uuid)\
-        .order_by(desc(func.count(f_post_uuid)))\
-        .options(joinedload('tags'))\
-        .limit(num)\
-        .all()
 
 
 class VistorsResources:
@@ -108,8 +131,6 @@ class VistorsResources:
             'tags': post.tags,
             'prev_link': slug_prev and self.request.route_url("post", slug=slug_prev),
             'next_link': slug_next and self.request.route_url("post", slug=slug_next),
-            'recent': get_recent_posts(dbsession, self.posts_query),
-            'similar': get_similar_posts(dbsession, post, self.posts_query),
         }
 
 

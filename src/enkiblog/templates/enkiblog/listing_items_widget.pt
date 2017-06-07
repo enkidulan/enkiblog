@@ -1,0 +1,17 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3>${title}</h3>
+    </div>
+    <div class="recent list-group">
+        <a tal:repeat="item items"
+           href="${request.route_url('post', slug=item.slug)}"
+           class="list-group-item">
+            <h4 class="list-group-item-heading">${item}</h4>
+            <p class="list-group-item-text">
+                <tal:block tal:repeat="tag item.tags">
+                    ${tag}${ '' if repeat.tag.end else ', ' }
+                </tal:block>
+            </p>
+        </a>
+    </div>
+</div>

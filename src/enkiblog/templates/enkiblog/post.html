@@ -69,41 +69,9 @@
 
 {% block sidebar %}
 
-<div class="panel panel-default">
-    <div class="panel-heading">
-        <h3>Similar posts</h3>
-    </div>
-    <div class="similar list-group">
-        {% for sub_post in similar %}
-        <a href="{{request.route_url('post', slug=sub_post.slug)}}" class="list-group-item">
-            <h4 class="list-group-item-heading">{{sub_post}}</h4>
-            <p class="list-group-item-text">
-            {% for tag in sub_post.tags %}
-                {{tag}}{{ "," if not loop.last }}
-            {% endfor %}
-            </p>
-        </a>
-        {% endfor %}
-    </div>
-</div>
+{{ panel('similar_items_widget', context=post) }}
 
-<div class="panel panel-default">
-    <div class="panel-heading">
-        <h3>Recent posts</h3>
-    </div>
-    <div class="recent list-group">
-        {% for sub_post in recent %}
-        <a href="{{request.route_url('post', slug=sub_post.slug)}}" class="list-group-item">
-            <h4 class="list-group-item-heading">{{sub_post}}</h4>
-            <p class="list-group-item-text">
-            {% for tag in sub_post.tags %}
-                {{tag}}{{ "," if not loop.last }}
-            {% endfor %}
-            </p>
-        </a>
-        {% endfor %}
-    </div>
-</div>
+{{ panel('recent_items_widget', context=post) }}
 
 {% endblock %}
 

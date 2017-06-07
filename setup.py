@@ -37,7 +37,9 @@ setup(
         'babel',
         'gunicorn',
         'pyramid_raven',
-        'pyramid_mako',
+        'pyramid_mako',  # unpinned pyramid_raven dependency
+        'pyramid_chameleon',
+        'pyramid-layout',
     ],
     extras_require={
         'test': [

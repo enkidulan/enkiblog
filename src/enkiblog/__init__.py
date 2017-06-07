@@ -16,14 +16,14 @@ class Initializer(websauna.system.Initializer):
 
     def configure_static(self):
         """Configure static asset serving and cache busting."""
-        super(Initializer, self).configure_static()
+        super().configure_static()
         # custom widget static view
         self.static_asset_policy.add_static_view('deform-custom-widget-static', 'enkiblog.deform_widgets:static')
         self.static_asset_policy.add_static_view('enkiblog-static', 'enkiblog:static')
 
     def configure_templates(self):
         """Include our package templates folder in Jinja 2 configuration."""
-        super(Initializer, self).configure_templates()
+        super().configure_templates()
         add_templates = partial(
             self.config.add_jinja2_search_path, 'enkiblog:templates', prepend=True)
 
@@ -47,7 +47,7 @@ class Initializer(websauna.system.Initializer):
 
     def configure_model_admins(self):
         # Call parent which registers user and group admins
-        super(Initializer, self).configure_model_admins()
+        super().configure_model_admins()
 
         # Scan our admins
         from . import admins
@@ -88,15 +88,19 @@ class Initializer(websauna.system.Initializer):
 
     def make_overrides(self):
         self.config.commit()  # there is views overrides in overrides.py
-
         from . import overrides
         self.config.scan(overrides)
 
-    def run(self):
-        self.configure_workflow()
+    def include_addons(self):
+        super().include_addons()
+        self.config.include('pyramid_layout')
         self.config.include('pyramid_mako')
+        self.config.include('pyramid_chameleon')
         self.config.include('pyramid_raven')
-        super(Initializer, self).run()
+
+    def run(self):
+        super().run()
+        self.configure_workflow()
         self.make_overrides()
 
 
