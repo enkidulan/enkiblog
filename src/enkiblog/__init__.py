@@ -91,12 +91,28 @@ class Initializer(websauna.system.Initializer):
         from . import overrides
         self.config.scan(overrides)
 
+        from enkiblog.authorization import ContextualACLAuthorizationPolicy
+        authz_policy = ContextualACLAuthorizationPolicy()
+        self.config.set_authorization_policy(authz_policy)
+
     def include_addons(self):
         super().include_addons()
         self.config.include('pyramid_layout')
         self.config.include('pyramid_mako')
         self.config.include('pyramid_chameleon')
         self.config.include('pyramid_raven')
+
+    def configure_database(self):
+
+        from sqlalchemy.orm import sessionmaker
+
+        def db_session_maker(engine):
+            dbmaker = sessionmaker()
+            dbmaker.configure(bind=engine)
+            return dbmaker
+
+        self.config.registry.db_session_maker = db_session_maker
+        super().configure_database()
 
     def run(self):
         super().run()

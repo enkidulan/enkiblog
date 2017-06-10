@@ -32,6 +32,22 @@ def deferred_ckeditor_widget(node, kw):
     return CKEditorWidget(options=options)
 
 
+@colander.deferred
+def deferred_state_choices_widget(node, kw):
+    request = kw['request']
+    workflow = request.workflow
+    workflow.state_info(None, request)
+    context = None  # XXX: should be a resource model
+    choices = [(w['name'], w['title']) for w in workflow.state_info(context, kw['request'])]
+    return deform.widget.SelectWidget(values=choices)
+
+
+@colander.deferred
+def deferred_state_default(node, kw):
+    workflow = kw['request'].workflow
+    return workflow.initial_state
+
+
 # XXX: don't like this
 post_editable_fields = [
     "title",
@@ -49,7 +65,12 @@ post_editable_fields = [
         name="body",
         required=True,
         widget=deferred_ckeditor_widget),
-    "state",
+    colander.SchemaNode(
+        colander.String(),
+        name="state",
+        required=True,
+        default=deferred_state_default,
+        widget=deferred_state_choices_widget),
 ]
 post_viewable_fields = post_editable_fields + [
     "uuid",

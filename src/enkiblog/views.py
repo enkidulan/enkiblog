@@ -14,7 +14,8 @@ from websauna.system.core.events import InternalServerError
 from websauna.system.core.loggingcapture import get_logging_user_context
 from pyramid_layout.panel import panel_config
 
-dummy_tuple = tuple()
+
+EMPTY_TUPLE = tuple()
 
 
 _icon = open(os.path.join(os.path.dirname(__file__), 'static', 'favicon.ico'), 'rb').read()
@@ -29,7 +30,7 @@ def favicon_view(context, request):
 @panel_config('meta_tags', renderer='templates/enkiblog/meta_tags.pt')
 def meta_tags(context, request):
     return {
-        'tags': ','.join(map(str, getattr(context, 'tags', dummy_tuple))),
+        'tags': ','.join(map(str, getattr(context, 'tags', EMPTY_TUPLE))),
         'title': str(context),
         'description': context.description,
         'site_name': 'Enkidu\'s Blog',  # XXX: get from settings
@@ -38,11 +39,12 @@ def meta_tags(context, request):
 
 @panel_config('recent_items_widget', renderer='templates/enkiblog/listing_items_widget.pt')
 def recent_items_widget(context, request, num=10, title='Recent posts'):
-    posts_query = models.Post.acl_aware_listing_query(
-        dbsession=request.dbsession,
-        effective_principals=request.effective_principals,
-        actions=('view',),
-        user=request.user)
+    posts_query = models.Post.acl_query(request)
+    # posts_query = models.Post.acl_aware_listing_query(
+    #     dbsession=request.dbsession,
+    #     effective_principals=request.effective_principals,
+    #     actions=('view',),
+    #     user=request.user)
     items = posts_query\
         .options(joinedload('tags'))\
         .order_by(models.Post.published_at.desc())\
@@ -59,25 +61,22 @@ def similar_items_widget(context, request, num=10, title='Similar posts'):
     dbsession = request.dbsession
     post = context
 
-    posts_query = models.Post.acl_aware_listing_query(
-        dbsession=dbsession,
-        effective_principals=request.effective_principals,
-        actions=('view',),
-        user=request.user)
+
+    posts_query = models.Post.acl_query(request)
 
     post_tags = dbsession.query(f_tag_uuid).filter(
         f_post_uuid == post.uuid)
 
+        # .filter(f_post_uuid.in_(posts_query.with_entities(models.Post.uuid)))\
     items = dbsession.query(models.Post)\
-        .filter(f_post_uuid.in_(posts_query.with_entities(models.Post.uuid)))\
         .filter(f_tag_uuid.in_(post_tags))\
         .filter(f_post_uuid == models.Post.uuid)\
         .filter(f_post_uuid != post.uuid)\
         .group_by(f_post_uuid, models.Post.uuid)\
         .order_by(desc(func.count(f_post_uuid)))\
-        .options(joinedload('tags'))\
         .limit(num)\
         .all()
+        # .options(joinedload('tags'))\
 
     return {'items': items, 'title': title}
 
@@ -104,11 +103,12 @@ class VistorsResources:
         self.dbsession = request.dbsession
         # self.posts_query = self.dbsession.query(models.Post).filter_by(state='published')
         # TODO: make it sense to switch to only published posts? ^
-        self.posts_query = models.Post.acl_aware_listing_query(
-            dbsession=self.dbsession,
-            effective_principals=request.effective_principals,
-            actions=('view',),
-            user=request.user)
+        self.posts_query = models.Post.acl_query(request)
+        # self.posts_query = models.Post.acl_aware_listing_query(
+        #     dbsession=self.dbsession,
+        #     effective_principals=request.effective_principals,
+        #     actions=('view',),
+        #     user=request.user)
         self.posts_query = self.posts_query.order_by(models.Post.published_at.desc())
         # TODO: add test to show only public posts
 
@@ -119,8 +119,9 @@ class VistorsResources:
             return HTTPFound(self.request.route_url("post", slug=post.slug))
         return {"project": "enkiblog"}
 
-    @view_config(route_name="post", renderer='enkiblog/post.html')
+    @view_config(route_name="post", renderer='enkiblog/post.html', permission='view')
     def post(self):
+        request = self.request
         dbsession = self.dbsession
         slug = self.request.matchdict["slug"]
 
@@ -158,11 +159,12 @@ class VistorsResources:
 
 @view_config(route_name='media')
 def media_view(context, request):
-    query = models.Media.acl_aware_listing_query(
-        dbsession=request.dbsession,
-        effective_principals=request.effective_principals,
-        actions=('view',),
-        user=request.user)
+    query = models.Media.acl_query(request)
+    # query = models.Media.acl_aware_listing_query(
+    #     dbsession=request.dbsession,
+    #     effective_principals=request.effective_principals,
+    #     actions=('view',),
+        # user=request.user)
     obj = query.filter_by(slug=request.matchdict["slug"]).one()
     return Response(content_type=obj.mimetype, body=obj.blob)
 
