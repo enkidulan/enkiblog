@@ -12,6 +12,7 @@ def prop(prop):
 
 
 def simple_workflow():
+    public = 'public'
     workflow = Workflow(
         state_attr='state',
         initial_state='private',
@@ -23,7 +24,7 @@ def simple_workflow():
         'managing': ('view', 'edit'),  # that looks a bit too much, websauna does it, should I integrate it into websauna? - should admin panel resources use it?
     }
     workflow.add_state(
-        'public',
+        public,
         acl=(P(Allow, (Everyone, ), permissions['viewing']),
              P(Allow, prop('editors'), permissions['managing']),
              P(*DENY_ALL))
@@ -35,14 +36,15 @@ def simple_workflow():
     )
     workflow.add_transition('publish', 'private', 'public')
     workflow.add_transition('hide', 'public', 'private')
+    workflow.is_published = lambda context: getattr(context, workflow.state_attr, None) == public
     workflow.check()
     return workflow
 
 
-def get_worflow(requst):
-    workflow = getattr(requst.registry, "workflow", None)
+def get_worflow(request):
+    workflow = getattr(request.registry, "workflow", None)
     if workflow is None:
-        workflow = requst.registry.workflow = simple_workflow()
+        workflow = request.registry.workflow = simple_workflow()
     return workflow
 
 

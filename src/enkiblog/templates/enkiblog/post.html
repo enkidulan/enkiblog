@@ -7,6 +7,15 @@
 {% block article %}
 
     <article>
+
+        {% if not request.workflow.is_published(post) %}
+        <div class="alert alert-danger" role="alert">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Error:</span>
+            Item is not published yet
+        </div>
+        {% endif %}
+
         <h1 id="post-title">{{post.title}}</h1>
         <div class="post-meta-info">
             <p id="post-description">

@@ -5,7 +5,7 @@
     <div class="list-group">
         <a tal:repeat="item items"
            href="${request.route_url('post', slug=item.slug)}"
-           class="list-group-item">
+           class="list-group-item ${'' if request.workflow.is_published(item) else 'alert-danger'}">
             <h4 class="list-group-item-heading">${item}</h4>
             <p class="list-group-item-text">
                 <tal:block tal:repeat="tag item.tags">
