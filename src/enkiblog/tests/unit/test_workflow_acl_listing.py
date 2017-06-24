@@ -9,9 +9,10 @@ def compare(a, b):
     _base_compare(sorted(repr(i) for i in a), sorted(repr(i) for i in b))
 
 
-def test_public_state_listing(fakefactory, dbsession):
+def test_public_state_listing(fakefactory, dbsession, request):
 
     from enkiblog.models import Post
+    from enkiblog.workflow import get_worflow
 
     with transaction.manager:
         user = fakefactory.UserFactory()
@@ -23,7 +24,12 @@ def test_public_state_listing(fakefactory, dbsession):
         dbsession.expunge_all()
 
     def get_posts(effective_principals, actions, user):
-        return Post.acl_aware_listing_query(dbsession, effective_principals, actions, user=user).all()
+        request.effective_principals = effective_principals
+        request.user = user
+        request.registry = request
+        request.workflow = get_worflow(request)
+        return dbsession.query(Post).acl_filter(request, actions=actions)
+        # return Post.acl_aware_listing_query(dbsession, effective_principals, actions, user=user).all()
 
     def get_posts_for_managing(*effective_principals, user=None):
         return get_posts(effective_principals=effective_principals, actions=['edit'], user=user)

@@ -95,24 +95,19 @@ class Initializer(websauna.system.Initializer):
         authz_policy = ContextualACLAuthorizationPolicy()
         self.config.set_authorization_policy(authz_policy)
 
+    def configure_database(self):
+        from websauna.system.model.meta import get_engine
+        from enkiblog.meta import create_session_maker
+        engine = get_engine(self.config.registry.settings)
+        self.config.registry.db_session_maker = create_session_maker(engine)
+        super().configure_database()
+
     def include_addons(self):
         super().include_addons()
         self.config.include('pyramid_layout')
         self.config.include('pyramid_mako')
         self.config.include('pyramid_chameleon')
         self.config.include('pyramid_raven')
-
-    def configure_database(self):
-
-        from sqlalchemy.orm import sessionmaker
-
-        def db_session_maker(engine):
-            dbmaker = sessionmaker()
-            dbmaker.configure(bind=engine)
-            return dbmaker
-
-        self.config.registry.db_session_maker = db_session_maker
-        super().configure_database()
 
     def run(self):
         super().run()

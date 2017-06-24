@@ -39,12 +39,7 @@ def meta_tags(context, request):
 
 @panel_config('recent_items_widget', renderer='templates/enkiblog/listing_items_widget.pt')
 def recent_items_widget(context, request, num=10, title='Recent posts'):
-    posts_query = models.Post.acl_query(request)
-    # posts_query = models.Post.acl_aware_listing_query(
-    #     dbsession=request.dbsession,
-    #     effective_principals=request.effective_principals,
-    #     actions=('view',),
-    #     user=request.user)
+    posts_query = request.dbsession.query(models.Post).acl_filter(request)
     items = posts_query\
         .options(joinedload('tags'))\
         .order_by(models.Post.published_at.desc())\
@@ -61,14 +56,10 @@ def similar_items_widget(context, request, num=10, title='Similar posts'):
     dbsession = request.dbsession
     post = context
 
-
-    posts_query = models.Post.acl_query(request)
-
     post_tags = dbsession.query(f_tag_uuid).filter(
         f_post_uuid == post.uuid)
-
-        # .filter(f_post_uuid.in_(posts_query.with_entities(models.Post.uuid)))\
     items = dbsession.query(models.Post)\
+        .acl_filter(request)\
         .filter(f_tag_uuid.in_(post_tags))\
         .filter(f_post_uuid == models.Post.uuid)\
         .filter(f_post_uuid != post.uuid)\
@@ -76,7 +67,6 @@ def similar_items_widget(context, request, num=10, title='Similar posts'):
         .order_by(desc(func.count(f_post_uuid)))\
         .limit(num)\
         .all()
-        # .options(joinedload('tags'))\
 
     return {'items': items, 'title': title}
 
@@ -102,13 +92,8 @@ class VistorsResources:
         self.request = request
         self.dbsession = request.dbsession
         # self.posts_query = self.dbsession.query(models.Post).filter_by(state='published')
-        # TODO: make it sense to switch to only published posts? ^
-        self.posts_query = models.Post.acl_query(request)
-        # self.posts_query = models.Post.acl_aware_listing_query(
-        #     dbsession=self.dbsession,
-        #     effective_principals=request.effective_principals,
-        #     actions=('view',),
-        #     user=request.user)
+        # TODO: make it sense to switch to only published posts? ^ make a mark for posts that are not public
+        self.posts_query = self.dbsession.query(models.Post).acl_filter(request)
         self.posts_query = self.posts_query.order_by(models.Post.published_at.desc())
         # TODO: add test to show only public posts
 
@@ -121,16 +106,12 @@ class VistorsResources:
 
     @view_config(route_name="post", renderer='enkiblog/post.html', permission='view')
     def post(self):
-        request = self.request
         dbsession = self.dbsession
         slug = self.request.matchdict["slug"]
 
         posts_query = self.posts_query.options(joinedload('tags'))
         post_subquery = posts_query.subquery('post_subquery')
-
-        # TODO: investigate case - probably after union issue
-        # XXX: actually important issue - need to be fixed
-        slug_field = post_subquery.c.slug if hasattr(post_subquery.c, 'slug') else post_subquery.c.posts_slug
+        slug_field = post_subquery.c.slug
 
         neighborhood = dbsession.query(
             slug_field.label('current'),
@@ -159,12 +140,7 @@ class VistorsResources:
 
 @view_config(route_name='media')
 def media_view(context, request):
-    query = models.Media.acl_query(request)
-    # query = models.Media.acl_aware_listing_query(
-    #     dbsession=request.dbsession,
-    #     effective_principals=request.effective_principals,
-    #     actions=('view',),
-        # user=request.user)
+    query = request.dbsession.query(models.Media).acl_filter(request)
     obj = query.filter_by(slug=request.matchdict["slug"]).one()
     return Response(content_type=obj.mimetype, body=obj.blob)
 
