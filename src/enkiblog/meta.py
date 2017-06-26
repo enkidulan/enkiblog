@@ -62,7 +62,8 @@ def acl_query_params_builder(cls, request, actions):
         if agent in effective_principals
     )
 
-    params = cls.state.in_(allowing_states_for_principals)
+    # params = cls.state.in_(allowing_states_for_principals)
+    params = sa.or_(cls.state == state for state in allowing_states_for_principals)
     if user:
         acl_allowed_posts_queries = [
             sa.and_(cls.state == state, agent == user)

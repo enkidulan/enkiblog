@@ -33,7 +33,9 @@ class Post(Base):
     uuid = sa.Column(psql_dialect.UUID(as_uuid=True), default=uuid4, primary_key=True)
 
     created_at = sa.Column(UTCDateTime, default=now, nullable=False)
-    published_at = sa.Column(UTCDateTime, default=None, nullable=True, index=True)
+
+    # on uniques of `published_at` depend reliability of view prev/next feature
+    published_at = sa.Column(UTCDateTime, default=None, nullable=True, index=True, unique=True)
     updated_at = sa.Column(UTCDateTime, nullable=True, onupdate=now)
 
     title = sa.Column(sa.String(256), nullable=False)

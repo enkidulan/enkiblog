@@ -34,8 +34,11 @@ def simple_workflow():
         acl=(P(Allow, prop('editors'), permissions['managing']),
              P(*DENY_ALL))
     )
+    # TODO: make use of transactions
     workflow.add_transition('publish', 'private', 'public')
     workflow.add_transition('hide', 'public', 'private')
+    # XXX:
+    # TODO: add test that unpublished posts have a mark
     workflow.is_published = lambda context: getattr(context, workflow.state_attr, None) == public
     workflow.check()
     return workflow

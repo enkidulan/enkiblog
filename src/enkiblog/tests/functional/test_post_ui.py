@@ -1,3 +1,4 @@
+from datetime import timedelta
 import transaction
 
 
@@ -42,7 +43,9 @@ def test_user_can_navigate_by_paginator_between_posts(
     with transaction.manager:
         posts = fakefactory.PostFactory.create_batch(3)
         for post in posts:  # creating noise
-            fakefactory.PostFactory(published_at=post.published_at, state='draft')
+            time_delta = timedelta(seconds=0.000001)
+            fakefactory.PostFactory(published_at=post.published_at + time_delta, state='draft')
+            fakefactory.PostFactory(published_at=post.published_at - time_delta, state='draft')
         dbsession.expunge_all()
     navigator().navigate(site)
 
