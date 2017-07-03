@@ -2,8 +2,8 @@ import os.path
 from pyramid.httpexceptions import HTTPFound
 from pyramid.response import Response
 from pyramid.view import view_config
-from sqlalchemy import func, desc, asc
-from sqlalchemy.orm import joinedload
+from sqlalchemy import func, desc, asc, select
+from sqlalchemy.orm import joinedload, subqueryload, load_only, aliased
 from sqlalchemy.orm.exc import NoResultFound
 from websauna.system.core.views.notfound import notfound
 
@@ -58,16 +58,30 @@ def similar_items_widget(context, request, num=10, title='Similar posts'):
 
     post_tags = dbsession.query(f_tag_uuid).filter(
         f_post_uuid == post.uuid)
-    items = dbsession.query(models.Post)\
+    post_uuid = models.Post.uuid.label("post_uuid")
+    relevance = func.count(f_post_uuid).label("relevance")
+
+    allowed_to_see_sbr = dbsession.query(models.Post.uuid)\
         .acl_filter(request)\
-        .options(joinedload('tags'))\
+        .subquery('allowed_to_see_sbr')
+
+    related_posts_sbr = dbsession.query(f_post_uuid)\
         .filter(f_tag_uuid.in_(post_tags))\
-        .filter(f_post_uuid == models.Post.uuid)\
-        .group_by(f_post_uuid, models.Post.uuid)\
-        .order_by(desc(func.count(f_post_uuid)))\
+        .filter(f_post_uuid == post_uuid)\
+        .filter(f_post_uuid.in_(allowed_to_see_sbr))\
+        .group_by(f_post_uuid)\
+        .order_by(relevance)\
+        .limit(num + 1)\
+        .subquery('related_posts_sbr')
+
+    items = dbsession.query(models.Post)\
+        .options(joinedload('tags'))\
+        .filter(models.Post.uuid.in_(related_posts_sbr))\
         .limit(num + 1)\
         .all()
-        # .filter(f_post_uuid != post.uuid)\
+    # TODO: order for showed items is not preserved
+
+    # NOTE: checking not-equal outside SQL really gives performance increase
     items = tuple(i for i in items if i.uuid != post.uuid)
     return {'items': items[:num], 'title': title}
 

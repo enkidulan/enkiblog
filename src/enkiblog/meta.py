@@ -76,7 +76,7 @@ class ACLFilteringQuery(Query):
     def acl_filter(self, request, actions=('view',)):
         query = self
         for entity in self._entities:
-            params = acl_query_params_builder(entity.type, request, actions)
+            params = acl_query_params_builder(entity.mapper.class_, request, actions)
             query = query.filter(params)
         return query
 
