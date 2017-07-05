@@ -1,11 +1,14 @@
 """App entry point and configuration."""
 from functools import partial
 import websauna.system
+from pkg_resources import get_distribution
+
+__version__ = get_distribution('enkiblog').version
 
 
 class Initializer(websauna.system.Initializer):
-    """An initialization configuration used for starting enkiblog.
-
+    """
+    An initialization configuration used for starting enkiblog.
     Override parent class methods to customize application behavior.
     """
 
@@ -18,7 +21,8 @@ class Initializer(websauna.system.Initializer):
         """Configure static asset serving and cache busting."""
         super().configure_static()
         # custom widget static view
-        self.static_asset_policy.add_static_view('deform-custom-widget-static', 'enkiblog.deform_widgets:static')
+        self.static_asset_policy.add_static_view(
+            'deform-custom-widget-static', 'enkiblog.deform_widgets:static')
         self.static_asset_policy.add_static_view('enkiblog-static', 'enkiblog:static')
 
     def configure_templates(self):
@@ -32,20 +36,30 @@ class Initializer(websauna.system.Initializer):
         add_templates(name='.xml')  # Sitemap and misc XML files (if any)
 
     def configure_views(self):
-        # We override this method, so that we route home to our home screen, not Websauna default one
+        """Views configuration"""
         self.config.add_route('home', '/')
-        self.config.add_route('old_post', '/programming/notes-on-web-development-with-python/{slug}')
+        self.config.add_route(
+            'old_post', '/programming/notes-on-web-development-with-python/{slug}')
         self.config.add_route('post', '/programming/{slug}')
         self.config.add_route('media', '/media/{slug}')
 
         from . import views
         self.config.scan(views)
 
-    def configure_models(self):
+    def configure_instrumented_models(self):
+        super().configure_instrumented_models()
         from . import models
-        self.config.scan(models)
+        self.config.include(models)
+
+    # def configure_models(self):
+    #     """Models configuration"""
+    #     super().configure_models()
+
+    #     # self.config.scan(models)
 
     def configure_model_admins(self):
+        """Admin Models configuration"""
+
         # Call parent which registers user and group admins
         super().configure_model_admins()
 
@@ -56,22 +70,37 @@ class Initializer(websauna.system.Initializer):
         self.config.scan(adminviews)
 
     def create_static_asset_policy(self):
+        """
+        Static Assets Policy configuration.
+        Default one wasn't compatible with modern JS frameworks/libs
+        """
         from websauna.system.http.static import StaticAssetPolicy
         from pyramid.static import QueryStringConstantCacheBuster
 
+        # pylint: disable=too-few-public-methods
         class SimpleStaticAssetPolicy(StaticAssetPolicy):
-            static_version = '2017-05-30'  # TODO: that is stupid - replace with release number or calculate dynamically
+            """
+            Static Asset Policy with custom simple cache buster
+            based on package version.
+            """
+            static_version = __version__
+
             def add_static_view(self, name: str, path: str):
-                cache_max_age = self.config.registry.settings.get("websauna.cache_max_age_seconds")
+                """ Adds static view and sets cache buster for it"""
+                cache_max_age = self.config.registry.settings.get(
+                    "websauna.cache_max_age_seconds")
                 if cache_max_age:
                     cache_max_age = int(cache_max_age)
                 self.config.add_static_view(name, path, cache_max_age=cache_max_age)
                 if cache_max_age:
                     self.config.add_cache_buster(
                         path, QueryStringConstantCacheBuster(self.static_version))
+
         return SimpleStaticAssetPolicy(self.config)
 
     def configure_forms(self):
+        """Forms configuration"""
+
         super().configure_forms()
 
         # from websauna.system.form.resources import DefaultFormResources
@@ -87,15 +116,23 @@ class Initializer(websauna.system.Initializer):
         }}
 
     def make_overrides(self):
-        self.config.commit()  # there is views overrides in overrides.py
+        """
+        Overrides configuration step that runs after all other configuration steps,
+        put in there things that is needed to be overrider in config
+        """
+        self.config.commit()
+
         from . import overrides
         self.config.scan(overrides)
 
+        # original ACLAuthorizationPolicy wasn't enough
         from enkiblog.authorization import ContextualACLAuthorizationPolicy
         authz_policy = ContextualACLAuthorizationPolicy()
         self.config.set_authorization_policy(authz_policy)
 
     def configure_database(self):
+        """Database configuration"""
+
         from websauna.system.model.meta import get_engine
         from enkiblog.meta import create_session_maker
         engine = get_engine(self.config.registry.settings)
@@ -103,6 +140,8 @@ class Initializer(websauna.system.Initializer):
         super().configure_database()
 
     def include_addons(self):
+        """Addons including/configuration"""
+
         super().include_addons()
         self.config.include('pyramid_layout')
         self.config.include('pyramid_mako')
@@ -110,12 +149,14 @@ class Initializer(websauna.system.Initializer):
         self.config.include('pyramid_raven')
 
     def run(self):
-        super().run()
+        """Configuration runner"""
         self.configure_workflow()
+        super().run()
         self.make_overrides()
 
 
-def main(global_config, **settings):
+def main(global_config, **_):
+    """Main wsgi making app"""
     init = Initializer(global_config)
     init.run()
     return init.make_wsgi_app()

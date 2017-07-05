@@ -10,7 +10,7 @@ with open(os.path.join(here, 'CHANGES.rst')) as f:
 
 setup(
     name='enkiblog',
-    version='0.0',
+    version='0.1',
     description='enkiblog',
     long_description=README + '\n\n' + CHANGES,
     classifiers=[

@@ -1,124 +1,70 @@
-from uuid import uuid4
-from collections import namedtuple
-
+"""
+ORM models form enkiblog
+"""
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql as psql_dialect
-# from sqlalchemy.orm import relationship
-from pyramid.decorator import reify
-from pyramid.security import Allow, Everyone, Deny, DENY_ALL
 
-from websauna.system.model.meta import Base
-from websauna.system.model.columns import UTCDateTime
-from websauna.utils.time import now
-from websauna.system.model.json import NestedMutationDict
-from repoze.workflow import get_workflow
+from enkiblog.core.models import BaseResourceMixin, ContentResourceMixin, UUID
+
+# pylint: disable=too-few-public-methods
 
 
-P = namedtuple('Permission', ('allowance', 'agents', 'actions'))
-
-
-def resolve_user_requested_permission_to_states():
-    pass
-
-
-class AssociationPostsTags(Base):
+class AssociationPostsTags:
+    """
+    Association Table to keep relations between model, in perspective will evolve
+    into taxonomy
+    """
     __tablename__ = "association_posts_tags"
-    post_uuid = sa.Column(psql_dialect.UUID(as_uuid=True), sa.ForeignKey('posts.uuid'), primary_key=True)
-    tag_uuid = sa.Column(psql_dialect.UUID(as_uuid=True), sa.ForeignKey('tags.uuid'), primary_key=True)
+    post_uuid = sa.Column(UUID(), sa.ForeignKey('posts.uuid'), primary_key=True)
+    tag_uuid = sa.Column(UUID(), sa.ForeignKey('tags.uuid'), primary_key=True)
 
 
-class Post(Base):
+class Post(ContentResourceMixin):
+    """
+    Model for post content object
+    """
     __tablename__ = "posts"
 
-    uuid = sa.Column(psql_dialect.UUID(as_uuid=True), default=uuid4, primary_key=True)
-
-    created_at = sa.Column(UTCDateTime, default=now, nullable=False)
-
-    # on uniques of `published_at` depend reliability of view prev/next feature
-    published_at = sa.Column(UTCDateTime, default=None, nullable=True, index=True, unique=True)
-    updated_at = sa.Column(UTCDateTime, nullable=True, onupdate=now)
-
-    title = sa.Column(sa.String(256), nullable=False)
-    description = sa.Column(sa.Text(), nullable=False, default="")
-
     body = sa.Column(sa.Text(), nullable=False, default="")
-    slug = sa.Column(sa.String(256), nullable=False, unique=True)
-
-    # TODO: move all workflow related to json
-    #       sa.Column(NestedMutationDict.as_mutable(psql.JSONB), default=dict)
-    state = sa.Column(sa.Text(), nullable=False, default="private", index=True)  # TODO: dummy value - get actual default value form config.workflow
-
-    author_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'))
-    author = sa.orm.relationship('User')
 
     tags = sa.orm.relationship(
         'Tag', secondary=AssociationPostsTags.__tablename__, back_populates="posts")
 
-    @property
-    def id(self):  # XXX:
-        return self.uuid
 
-    def editors(self):
-        return (
-            self.author,
-            'group:admin',
-        )
-
-    def __repr__(self):
-        return "#{}: {}".format(self.uuid, self.title)
-
-    def __str__(self):
-        return self.title
-
-
-class Media(Base):
+class Media(ContentResourceMixin):
+    """
+    Media resource model, work for all file-alike resources
+    """
     __tablename__ = "media"
+    # IDEA: add relation to linked resource for tracking
+    # IDEA: make referenced ACL - get acl from parent object
 
-    uuid = sa.Column(psql_dialect.UUID(as_uuid=True), default=uuid4, primary_key=True)
-
-    created_at = sa.Column(UTCDateTime, default=now, nullable=False)
-    published_at = sa.Column(UTCDateTime, default=None, nullable=True)
-    updated_at = sa.Column(UTCDateTime, nullable=True, onupdate=now)
-
-    title = sa.Column(sa.String(256), nullable=False)
     mimetype = sa.Column(sa.String(256), default="")
-    description = sa.Column(sa.Text(), nullable=False, default="")
-    slug = sa.Column(sa.String(256), nullable=False, unique=True)
 
+    # NOTE: in general keep binaries in DB is not the best idea, but I want to
+    #       simplify maintenance cost and know for sure that there will be only
+    #       few small media object
     blob = sa.Column(psql_dialect.BYTEA)
 
-    state = sa.Column(sa.Text(), nullable=False, default="private", index=True)
 
-    author_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'))
-    author = sa.orm.relationship('User')
-
-    @property
-    def id(self):  # XXX:
-        return self.uuid
-
-    def editors(self):
-        return (
-            self.author,
-            'group:admin',
-        )
-
-
-class Tag(Base):
+class Tag(BaseResourceMixin):
+    """
+    Tag resource model, basic taxonomy realization for now
+    """
     __tablename__ = "tags"
-
-    uuid = sa.Column(psql_dialect.UUID(as_uuid=True), default=uuid4, primary_key=True)
-
-    title = sa.Column(sa.String(256), unique=True, nullable=False)
 
     posts = sa.orm.relationship(
         'Post', secondary=AssociationPostsTags.__tablename__, back_populates="tags")
 
-    @property
-    def id(self):  # XXX:
-        return self.uuid
 
-    def __repr__(self):
-        return "#{}: {}".format(self.uuid, self.title)
+def includeme(config):  # pylint: disable=unused-argument
+    """ Attaching all declared models to Base here """
+    from websauna.system.model.meta import Base
+    from websauna.system.model.utils import attach_model_to_base
 
-    def __str__(self):
-        return self.title
+    # IDEA: make it dynamic, kind of as if it were inherited from Base model, but provide
+    #       app registry in  meta
+    attach_model_to_base(Post, Base)
+    attach_model_to_base(AssociationPostsTags, Base)
+    attach_model_to_base(Media, Base)
+    attach_model_to_base(Tag, Base)

@@ -127,7 +127,3 @@ class PostsListing(adminviews.Listing):
             listing.ControlsColumn(),
         ]
     )
-
-    def order_query(self, query):
-        """Sort the query."""
-        return query

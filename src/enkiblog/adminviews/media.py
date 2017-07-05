@@ -2,6 +2,7 @@ import colander
 import deform
 from uuid import uuid4
 
+from websauna.system.crud import listing
 from websauna.system.core.viewconfig import view_overrides
 from websauna.system.admin import views as adminviews
 from deform.schema import FileData
@@ -37,7 +38,8 @@ fields = (
 
 def marshal_appstruct_for_file_data(appstruct, field='blob'):
     appstruct['title'] = appstruct[field]['filename']
-    appstruct['slug'] = uuid4().hex + '-' + appstruct[field]['filename']
+    if 'slug' not in appstruct:
+        appstruct['slug'] = uuid4().hex + '-' + appstruct[field]['filename']
     appstruct['mimetype'] = appstruct[field]['mimetype']
     appstruct[field] = appstruct[field]['fp'].read()
 
@@ -71,9 +73,24 @@ class MediaEdit(adminviews.Edit):
         return appstruct
 
     def save_changes(self, form: deform.Form, appstruct: dict, obj: object):
-        # TODO: do not ovveride slug
-
         marshal_appstruct_for_file_data(appstruct)
         appstruct['author'] = self.request.user
 
         return super().save_changes(form, appstruct, obj)
+
+
+def navigate_url_getter(request, resource):
+    return request.route_url('media', slug=resource.obj.slug)
+
+
+@view_overrides(context=MediaAdmin)
+class MediaListing(adminviews.Listing):
+
+    table = listing.Table(
+        columns=[
+            listing.Column("title", "Title", navigate_url_getter=navigate_url_getter),
+            listing.Column("state", "State"),
+            listing.Column("author", "Author"),
+            listing.ControlsColumn(),
+        ]
+    )
