@@ -1,29 +1,31 @@
-import colander
-import deform
+""" Admin views for media content type"""
 from uuid import uuid4
 
-from websauna.system.crud import listing
+import colander
+import deform
+from deform.schema import FileData
 from websauna.system.core.viewconfig import view_overrides
 from websauna.system.admin import views as adminviews
-from deform.schema import FileData
-
-from enkiblog.admins import MediaAdmin
+from websauna.system.crud import listing
 from websauna.system.crud.formgenerator import SQLAlchemyFormGenerator
 
-
-class MemoryTmpStore(dict):
-    """ Instances of this class implement the
-    :class:`deform.interfaces.FileUploadTempStore` interface"""
-
-    def preview_url(self, uid):
-        return None
+from enkiblog.admins import MediaAdmin
+from enkiblog.core.forms import FileUploadTempStore
 
 
-# TODO: make one as in https://github.com/Pylons/substanced/blob/7761ae17759139019449a1872a46ff53bfd528bb/substanced/form/__init__.py#L111
-tmpstore = MemoryTmpStore()  # XXX:
+@colander.deferred
+def file_upload_widget(node, kwags):  # pylint: disable=unused-argument
+    """
+    File upload widget based on file tmp session storage, requires storage clean
+    up on success or cancellation
+    """
+    request = kwags['request']
+    tmpstore = FileUploadTempStore(request)
+    widget = deform.widget.FileUploadWidget(tmpstore)
+    return widget
 
 
-fields = (
+MEDIA_FORM_FIELDS = (
     colander.SchemaNode(
         colander.String(),
         name='description',
@@ -32,11 +34,12 @@ fields = (
         FileData(),
         name='blob',
         required=False,
-        widget=deform.widget.FileUploadWidget(tmpstore))
+        widget=file_upload_widget)
 )
 
 
 def marshal_appstruct_for_file_data(appstruct, field='blob'):
+    """ Mainly this is a marshaler for file upload widget field """
     appstruct['title'] = appstruct[field]['filename']
     if 'slug' not in appstruct:
         appstruct['slug'] = uuid4().hex + '-' + appstruct[field]['filename']
@@ -46,20 +49,27 @@ def marshal_appstruct_for_file_data(appstruct, field='blob'):
 
 @view_overrides(context=MediaAdmin)
 class MediaAdd(adminviews.Add):
+    """ Add form of media object """
 
-    form_generator = SQLAlchemyFormGenerator(includes=fields)
+    form_generator = SQLAlchemyFormGenerator(includes=MEDIA_FORM_FIELDS)
 
     def build_object(self, form, appstruct):
-
+        """ Marshales file upload data and creates recordable object """
         marshal_appstruct_for_file_data(appstruct)
         appstruct['author'] = self.request.user
-
         return super().build_object(form, appstruct)
+
+    def do_success(self, resource):
+        """ Cleans upload widget file temp store  """
+        FileUploadTempStore(self.request).clear()
+        return super().do_success(resource)
 
 
 @view_overrides(context=MediaAdmin.Resource)
 class MediaEdit(adminviews.Edit):
-    form_generator = SQLAlchemyFormGenerator(includes=list(fields) + ['state'])
+    """ Edit form of media object """
+
+    form_generator = SQLAlchemyFormGenerator(includes=MEDIA_FORM_FIELDS + ('state', ))
 
     def get_appstruct(self, form, obj):
         """Turn the object to form editable format."""
@@ -73,18 +83,25 @@ class MediaEdit(adminviews.Edit):
         return appstruct
 
     def save_changes(self, form: deform.Form, appstruct: dict, obj: object):
+        """ Marshales file upload data and save changes """
         marshal_appstruct_for_file_data(appstruct)
         appstruct['author'] = self.request.user
-
         return super().save_changes(form, appstruct, obj)
+
+    def do_success(self):
+        """ Cleans upload widget file temp store  """
+        FileUploadTempStore(self.request).clear()
+        return super().do_success()
 
 
 def navigate_url_getter(request, resource):
+    """ Extract navigable link for media object """
     return request.route_url('media', slug=resource.obj.slug)
 
 
 @view_overrides(context=MediaAdmin)
 class MediaListing(adminviews.Listing):
+    """ Listing view of media object """
 
     table = listing.Table(
         columns=[

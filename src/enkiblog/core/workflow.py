@@ -14,6 +14,17 @@ def prop(prop):
     return getter
 
 
+def resolve_props(context, permission, deepth=2):
+    agents = permission.agents
+    for i in range(deepth):
+        if not callable(agents):
+            break
+        agents = agents(context)
+    else:
+        raise RuntimeError("Could not resolve '%s' callable property " % permission.agents)
+    return P(permission.allowance, agents, permission.actions)
+
+
 class PropsProxy:
     def __init__(self, *args, **kwargs):
         self.args = args
@@ -28,8 +39,20 @@ class Transition(PropsProxy):
     pass
 
 
+class PermissionsHelperMixin:
+
+    def get_allowance_permissions(self, context, request):
+        resolwer = partial(resolve_props, context)
+        for state in self.state_info(context, request):
+            for permission in map(resolwer, state['data']['acl']):
+                if permission.allowance != Allow:
+                    continue
+                yield state['name'], permission
+
+
 class WorkflowBuilder:
     __baseclass = Workflow
+    __basemixins = (PermissionsHelperMixin, )
 
     def __new__(cls):
         init_params = {n: getattr(cls, n) for n in signature(cls.__baseclass).parameters}
@@ -42,7 +65,7 @@ class WorkflowBuilder:
         reverse_states = {v: k for k, v in states.items()}
         init_params['initial_state'] = reverse_states[init_params['initial_state']]
 
-        workflow_cls = type(cls.__name__, (cls.__baseclass, ), members)
+        workflow_cls = type(cls.__name__, (cls.__baseclass, ) + cls.__basemixins, members)
 
         workflow = workflow_cls(**init_params)
 
@@ -56,24 +79,3 @@ class WorkflowBuilder:
 
         workflow.check()
         return workflow
-
-
-def resolve_props(context, permission, deepth=2):
-    agents = permission.agents
-    for i in range(deepth):
-        if not callable(agents):
-            break
-        agents = agents(context)
-    else:
-        raise RuntimeError("Could not resolve '%s' callable property " % permission.agents)
-    return P(permission.allowance, agents, permission.actions)
-
-
-def get_allowance_permissions_per_state(context, request):
-    workflow = request.workflow
-    resolwer = partial(resolve_props, context)
-    for state in workflow.state_info(context, request):
-        for permission in map(resolwer, state['data']['acl']):
-            if permission.allowance != Allow:
-                continue
-            yield state['name'], permission

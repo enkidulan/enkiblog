@@ -1,3 +1,5 @@
+""" Admin views for tag content type"""
+
 from websauna.system.admin import views as adminviews
 from websauna.system.core.viewconfig import view_overrides
 from websauna.system.crud import listing
@@ -6,7 +8,8 @@ from enkiblog.admins import TagAdmin
 from enkiblog.models import AssociationPostsTags
 
 
-def get_references_count(view, column, obj):
+def get_references_count(view, column, obj):  # pylint: disable=unused-argument
+    """ listing item view helper """
     count = view.request.dbsession.query(AssociationPostsTags).filter(
         AssociationPostsTags.tag_uuid == obj.uuid).count()
     return count
@@ -14,6 +17,7 @@ def get_references_count(view, column, obj):
 
 @view_overrides(context=TagAdmin)
 class TagsListing(adminviews.Listing):
+    """ Listing view """
 
     table = listing.Table(
         columns=[

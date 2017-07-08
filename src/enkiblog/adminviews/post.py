@@ -1,3 +1,4 @@
+""" Admin views for post content type"""
 from functools import partial
 import colander
 import deform
@@ -17,8 +18,10 @@ from enkiblog.utils import slugify
 
 
 @colander.deferred
-def deferred_tags_widget(node, kw):
-    dbsession = kw['request'].dbsession
+def deferred_tags_widget(node, kwags):  # pylint: disable=unused-argument
+    """ Tags select widget """
+    # TODO: make it search based
+    dbsession = kwags['request'].dbsession
     vocab = [
         (uuid_to_slug(uuid), title)
         for uuid, title in dbsession.query(Tag.uuid, Tag.title).all()]
@@ -27,29 +30,24 @@ def deferred_tags_widget(node, kw):
 
 
 @colander.deferred
-def deferred_ckeditor_widget(node, kw):
-    options = {}
-    return CKEditorWidget(options=options)
-
-
-@colander.deferred
-def deferred_state_choices_widget(node, kw):
-    request = kw['request']
+def deferred_state_choices_widget(node, kwags):  # pylint: disable=unused-argument
+    """ State select widget """
+    request = kwags['request']
     workflow = request.workflow
     workflow.state_info(None, request)
-    context = None  # XXX: should be a resource model
-    choices = [(w['name'], w['title']) for w in workflow.state_info(context, kw['request'])]
+    context = None  # TODO: should be a resource model
+    choices = [(w['name'], w['title']) for w in workflow.state_info(context, kwags['request'])]
     return deform.widget.SelectWidget(values=choices)
 
 
 @colander.deferred
-def deferred_state_default(node, kw):
-    workflow = kw['request'].workflow
+def deferred_state_default(node, kwags):  # pylint: disable=unused-argument
+    """ State default value widget """
+    workflow = kwags['request'].workflow
     return workflow.initial_state
 
 
-# XXX: don't like this
-post_editable_fields = [
+POST_EDITABLE_FIELDS = [
     "title",
     colander.SchemaNode(
         colander.String(),
@@ -64,7 +62,7 @@ post_editable_fields = [
         colander.String(),
         name="body",
         required=True,
-        widget=deferred_ckeditor_widget),
+        widget=CKEditorWidget()),
     colander.SchemaNode(
         colander.String(),
         name="state",
@@ -72,7 +70,8 @@ post_editable_fields = [
         default=deferred_state_default,
         widget=deferred_state_choices_widget),
 ]
-post_viewable_fields = post_editable_fields + [
+
+POST_VIEWABLE_FIELDS = POST_EDITABLE_FIELDS + [
     "uuid",
     "created_at",
     "published_at",
@@ -84,7 +83,9 @@ post_viewable_fields = post_editable_fields + [
 
 @view_overrides(context=PostAdmin)
 class PostAdd(adminviews.Add):
-    form_generator = SQLAlchemyFormGenerator(includes=post_editable_fields)
+    """ Add form """
+
+    form_generator = SQLAlchemyFormGenerator(includes=POST_EDITABLE_FIELDS)
 
     def add_object(self, obj):
         dbsession = self.context.get_dbsession()
@@ -97,33 +98,47 @@ class PostAdd(adminviews.Add):
 
 @view_overrides(context=PostAdmin.Resource)
 class PostEdit(adminviews.Edit):
-    form_generator = SQLAlchemyFormGenerator(includes=post_viewable_fields)
+    """ Edit form """
+
+    form_generator = SQLAlchemyFormGenerator(includes=POST_VIEWABLE_FIELDS)
     # TODO: on publishing publish all related content
+    # TODO: use worflow for publising posts
 
 
 @view_overrides(context=PostAdmin.Resource)
 class PostShow(adminviews.Show):
-    form_generator = SQLAlchemyFormGenerator(includes=post_viewable_fields)
+    """ View form """
+
+    form_generator = SQLAlchemyFormGenerator(includes=POST_VIEWABLE_FIELDS)
 
 
-def get_human_readable_date(field_name, view, column, obj):
+def get_human_readable_date(field_name, view, column, obj):  # pylint: disable=unused-argument
+    """ listing item view helper """
     time = getattr(obj, field_name)
     return format_date(time) if time else ''
 
 
 def post_navigate_url_getter(request, resource):
+    """ listing item view helper """
     return request.route_url('post', slug=resource.obj.slug)
 
 
 @view_overrides(context=PostAdmin)
 class PostsListing(adminviews.Listing):
+    """ Listing view """
 
     table = listing.Table(
         columns=[
             listing.Column("title", "Title", navigate_url_getter=post_navigate_url_getter),
             listing.Column("state", "State"),
-            listing.Column("created_at", "Created", getter=partial(get_human_readable_date, 'created_at')),
-            listing.Column("published_at", "Published", getter=partial(get_human_readable_date, 'published_at')),
+            listing.Column(
+                "created_at",
+                "Created",
+                getter=partial(get_human_readable_date, 'created_at')),
+            listing.Column(
+                "published_at",
+                "Published",
+                getter=partial(get_human_readable_date, 'published_at')),
             listing.ControlsColumn(),
         ]
     )

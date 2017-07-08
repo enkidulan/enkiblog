@@ -1,8 +1,10 @@
+""" Workflow configuration and declaration module  """
 from pyramid.security import Allow, Everyone, DENY_ALL
 from enkiblog.core.workflow import WorkflowBuilder, State, Transition, P, prop
 
 
-class SimpleWorkflow(WorkflowBuilder):
+class SimpleWorkflow(WorkflowBuilder):  # pylint: disable=too-few-public-methods
+    """ Simple workflow with only public/private states """
 
     name = 'simple_publication'
     state_attr = 'state'
@@ -28,16 +30,12 @@ class SimpleWorkflow(WorkflowBuilder):
     hide = Transition(public, private)
 
     def is_published(self, context):
+        """ checks if context is published and returns bool result """
+        # pylint: disable=no-member
         return getattr(context, self.state_attr, None) == self.states.public
 
 
-def get_worflow(request):
-    workflow = getattr(request.registry, "workflow", None)
-    if workflow is None:
-        workflow = request.registry.workflow = SimpleWorkflow()
-    return workflow
-
-
 def includeme(config):
+    """ Pyramids configuration part, initializes workflow and adds request method for it """
     config.registry.workflow = SimpleWorkflow()
-    config.add_request_method(get_worflow, name='workflow', reify=True)
+    config.add_request_method(lambda r: r.registry.workflow, name='workflow', reify=True)

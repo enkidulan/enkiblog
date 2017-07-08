@@ -1,12 +1,18 @@
+"""
+Database meta module, this mainly to set custom query class for
+alchemy DB session. Reason is to provide `acl_filter` method that
+plays along with workfolw and acl to provide authorization control for
+sets of records.
+"""
 from sqlalchemy.orm import Query
 from sqlalchemy.orm import sessionmaker
 import sqlalchemy as sa
-from enkiblog.core.workflow import get_allowance_permissions_per_state
 
 InstrumentedAttribute = sa.orm.attributes.InstrumentedAttribute
 
 
-def get_relational_and_principale_states(allowance_per_state, actions):
+def get_principales_states(allowance_per_state, actions):
+    """ Returns allowing principals for both relational and users effective_principals """
     allowing_states_and_agents = [
         (state, perm.agents)
         for state, perm in allowance_per_state
@@ -26,13 +32,13 @@ def get_relational_and_principale_states(allowance_per_state, actions):
 
 
 def acl_query_params_builder(cls, request, actions):
+    """ Returns arguments for a filter that would assure authorization control """
     effective_principals = set(request.effective_principals)
     user = request.user
-    # TODO: add tests (or is it added ?)
-    # !!!: doesn't allow to have localy stored custom acl!!!
 
-    allowance_per_state = get_allowance_permissions_per_state(cls, request)
-    relational_states, principale_states = get_relational_and_principale_states(
+    # Note: currently doesn't allow to have locally stored custom acl
+    allowance_per_state = request.workflow.get_allowance_permissions(cls, request)
+    relational_states, principale_states = get_principales_states(
         allowance_per_state, actions)
 
     allowing_states_for_principals = tuple(
@@ -51,7 +57,13 @@ def acl_query_params_builder(cls, request, actions):
 
 class ACLFilteringQuery(Query):
 
+    """ Query class that provides authorization abilities """
+
     def acl_filter(self, request, actions=('view',)):
+        """
+        Applies acl-workflow based filtering to query entities to achieve
+        authorization on a query level
+        """
         query = self
         for entity in self._entities:
             params = acl_query_params_builder(entity.mapper.class_, request, actions)
@@ -60,6 +72,7 @@ class ACLFilteringQuery(Query):
 
 
 def create_session_maker(engine):
+    """ Custom session maker that sets query class for session  """
     dbmaker = sessionmaker()
     dbmaker.configure(bind=engine, query_cls=ACLFilteringQuery)
     return dbmaker

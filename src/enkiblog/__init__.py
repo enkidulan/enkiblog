@@ -22,7 +22,7 @@ class Initializer(websauna.system.Initializer):
         super().configure_static()
         # custom widget static view
         self.static_asset_policy.add_static_view(
-            'deform-custom-widget-static', 'enkiblog.deform_widgets:static')
+            'deform-custom-widget-static', 'enkiblog.core.deform_widgets:static')
         self.static_asset_policy.add_static_view('enkiblog-static', 'enkiblog:static')
 
     def configure_templates(self):
@@ -108,11 +108,11 @@ class Initializer(websauna.system.Initializer):
         from websauna.system.form.deform import configure_zpt_renderer
 
         # Make Deform widgets aware of our widget template paths
-        configure_zpt_renderer(["enkiblog.deform_widgets:templates"])
+        configure_zpt_renderer(["enkiblog.core.deform_widgets:templates"])
         form_resources = self.config.registry.getUtility(IFormResources).get_default_resources()
         form_resources['ckeditor'] = {None: {
-            'js': 'enkiblog.deform_widgets:static/ckeditor/ckeditor.js',
-            'css': 'enkiblog.deform_widgets:static/ckeditor/contents.css',
+            'js': 'enkiblog.core.deform_widgets:static/ckeditor/ckeditor.js',
+            'css': 'enkiblog.core.deform_widgets:static/ckeditor/contents.css',
         }}
 
     def make_overrides(self):
