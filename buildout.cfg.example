@@ -6,6 +6,8 @@ extends =
 #[config_file]
 #sqlalchemy_url = postgresql://user:psw@localhost/enkiblog_dev
 #raven_dsn =
+# development
+#test_sqlalchemy_url = postgresql://user:psw@localhost/enkiblog_test
 
 
 # for production config

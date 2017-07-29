@@ -10,7 +10,7 @@ from websauna.system.form.sqlalchemy import UUIDModelSet
 from websauna.system.crud import listing
 from websauna.utils.slug import uuid_to_slug
 
-from enkiblog.deform_widgets import CKEditorWidget
+from enkiblog.core.deform.widgets import CKEditorWidget
 from enkiblog.admins import PostAdmin
 from enkiblog.models import Post, Tag
 from enkiblog.utils import slugify

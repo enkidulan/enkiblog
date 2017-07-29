@@ -8,18 +8,13 @@ from deform.schema import FileData
 
 from enkiblog.admins import MediaAdmin
 from websauna.system.crud.formgenerator import SQLAlchemyFormGenerator
+from enkiblog.core.deform.tempstorage import FileUploadTempStore
 
 
-class MemoryTmpStore(dict):
-    """ Instances of this class implement the
-    :class:`deform.interfaces.FileUploadTempStore` interface"""
-
-    def preview_url(self, uid):
-        return None
-
-
-# TODO: make one as in https://github.com/Pylons/substanced/blob/7761ae17759139019449a1872a46ff53bfd528bb/substanced/form/__init__.py#L111
-tmpstore = MemoryTmpStore()  # XXX:
+@colander.deferred
+def deferred_file_upload_widget(node, kw):
+    tmpstore = FileUploadTempStore(request=kw['request'])
+    return deform.widget.FileUploadWidget(tmpstore)
 
 
 fields = (
@@ -31,7 +26,7 @@ fields = (
         FileData(),
         name='blob',
         required=False,
-        widget=deform.widget.FileUploadWidget(tmpstore))
+        widget=deferred_file_upload_widget)
 )
 
 
@@ -75,5 +70,6 @@ class MediaEdit(adminviews.Edit):
 
         marshal_appstruct_for_file_data(appstruct)
         appstruct['author'] = self.request.user
+        FileUploadTempStore(request=self.request).clear()
 
         return super().save_changes(form, appstruct, obj)
