@@ -1,4 +1,4 @@
-from enkiblog.tests.site.base import CRUD
+from enkiblog.core.testing.site import CRUD
 
 
 class MediaCRUD(CRUD):

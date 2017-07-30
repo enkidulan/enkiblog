@@ -1,39 +1,21 @@
 import pytest
-from functools import partial
-import transaction
-
-from enkiblog.tests.navigator import Navigator
-from enkiblog.tests.site import site_constructor
 
 
 @pytest.fixture()
-def fakefactory(dbsession):
+def fakefactory(base_fakefactory):
     # TODO: Make thread-safe
     from . import fakefactory
-    fakefactory.db_session_proxy.session = dbsession
-    try:
-        yield fakefactory
-    finally:
-        fakefactory.db_session_proxy.session = None
+    return fakefactory
 
 
 @pytest.fixture()
-def admin_user(fakefactory, dbsession):
-    with transaction.manager:
-        user = fakefactory.AdminFactory()
-        dbsession.expunge_all()
-    return user
+def site(base_site):
+    from enkiblog.tests.site import (
+        post, media, tag)
 
-
-@pytest.fixture()
-def navigator(browser, site):
-    return partial(
-        Navigator,
-        browser=browser,
-        login_form=getattr(site, 'login_form', None)
-    )
-
-
-@pytest.fixture()
-def site(web_server):
-    return site_constructor(web_server)
+    site = base_site
+    site.add(post.Post)
+    site.admin_menu.add(post.PostCRUD().constructor())
+    site.admin_menu.add(media.MediaCRUD().constructor())
+    site.admin_menu.add(tag.MediaCRUD().constructor())
+    return site

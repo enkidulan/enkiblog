@@ -1,5 +1,5 @@
 import re
-from enkiblog.tests.navigator import Navigatable
+from enkiblog.core.testing.navigator import Navigatable
 
 
 def convert(name):
@@ -157,3 +157,10 @@ class CRUD:
         crud_listing.add(self.EditPage(crud_base=self))
         crud_listing.edit_page.add(self.EditForm(crud_base=self))
         return crud_listing
+
+
+def site_constructor(url):
+    site = SiteRoot(url)
+    site.add(AdminMenu())
+    site.add(LoginForm())
+    return site
