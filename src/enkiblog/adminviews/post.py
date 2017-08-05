@@ -13,7 +13,7 @@ from websauna.utils.slug import uuid_to_slug
 from enkiblog.core.deform.widgets import CKEditorWidget
 from enkiblog.admins import PostAdmin
 from enkiblog.models import Post, Tag
-from enkiblog.utils import slugify
+from enkiblog.core.utils import slugify
 
 
 @colander.deferred

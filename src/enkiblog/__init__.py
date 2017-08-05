@@ -85,13 +85,13 @@ class Initializer(websauna.system.Initializer):
         from . import overrides
         self.config.scan(overrides)
 
-        from enkiblog.authorization import ContextualACLAuthorizationPolicy
+        from enkiblog.core.authorization import ContextualACLAuthorizationPolicy
         authz_policy = ContextualACLAuthorizationPolicy()
         self.config.set_authorization_policy(authz_policy)
 
     def configure_database(self):
         from websauna.system.model.meta import get_engine
-        from enkiblog.meta import create_session_maker
+        from enkiblog.core.meta import create_session_maker
         engine = get_engine(self.config.registry.settings)
         self.config.registry.db_session_maker = create_session_maker(engine)
         super().configure_database()

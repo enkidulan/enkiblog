@@ -5,7 +5,7 @@ from uuid import uuid4
 from websauna.utils.time import now
 
 from enkiblog import models
-from enkiblog.utils import slugify
+from enkiblog.core.utils import slugify
 
 import os.path
 
