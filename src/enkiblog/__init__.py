@@ -18,7 +18,8 @@ class Initializer(websauna.system.Initializer):
         """Configure static asset serving and cache busting."""
         super().configure_static()
         # custom widget static view
-        self.static_asset_policy.add_static_view('deform-custom-widget-static', 'enkiblog.core.deform.widgets:static')
+        self.static_asset_policy.add_static_view(
+            'deform-custom-widget-static', 'enkiblog.core.deform.widgets:static')
         self.static_asset_policy.add_static_view('enkiblog-static', 'enkiblog:static')
 
     def configure_templates(self):
@@ -32,9 +33,11 @@ class Initializer(websauna.system.Initializer):
         add_templates(name='.xml')  # Sitemap and misc XML files (if any)
 
     def configure_views(self):
-        # We override this method, so that we route home to our home screen, not Websauna default one
+        # We override this method, so that we route home to our home
+        # screen, not Websauna default one
         self.config.add_route('home', '/')
-        self.config.add_route('old_post', '/programming/notes-on-web-development-with-python/{slug}')
+        self.config.add_route(
+            'old_post', '/programming/notes-on-web-development-with-python/{slug}')
         self.config.add_route('post', '/programming/{slug}')
         self.config.add_route('media', '/media/{slug}')
 
@@ -56,20 +59,11 @@ class Initializer(websauna.system.Initializer):
         self.config.scan(adminviews)
 
     def create_static_asset_policy(self):
-        from websauna.system.http.static import StaticAssetPolicy
-        from pyramid.static import QueryStringConstantCacheBuster
+        import pkg_resources
+        from enkiblog.core.static import RevisionBasedStaticAssetPolicy
 
-        class SimpleStaticAssetPolicy(StaticAssetPolicy):
-            static_version = '2017-05-30'  # TODO: that is stupid - replace with release number or calculate dynamically
-            def add_static_view(self, name: str, path: str):
-                cache_max_age = self.config.registry.settings.get("websauna.cache_max_age_seconds")
-                if cache_max_age:
-                    cache_max_age = int(cache_max_age)
-                self.config.add_static_view(name, path, cache_max_age=cache_max_age)
-                if cache_max_age:
-                    self.config.add_cache_buster(
-                        path, QueryStringConstantCacheBuster(self.static_version))
-        return SimpleStaticAssetPolicy(self.config)
+        revision = pkg_resources.get_distribution("enkiblog").version
+        return RevisionBasedStaticAssetPolicy(revision, self.config)
 
     def configure_forms(self):
         super().configure_forms()
