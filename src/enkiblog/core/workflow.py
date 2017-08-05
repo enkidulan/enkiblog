@@ -28,6 +28,7 @@ class Transition(PropsProxy):
 
 class WorkflowBuilder:
     __baseclass = Workflow
+    states = None  # NOTE: hack to make pyling happy... Crap, that is shitty!
 
     def __new__(cls):
         init_params = {n: getattr(cls, n) for n in signature(cls.__baseclass).parameters}

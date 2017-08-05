@@ -1,9 +1,6 @@
 from websauna.system.admin.modeladmin import model_admin
 from websauna.system.admin.modeladmin import ModelAdmin
-
-# Import our models
 from . import models
-from websauna.system.crud import listing
 
 
 @model_admin(traverse_id="posts")

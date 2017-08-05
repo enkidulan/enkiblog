@@ -130,4 +130,4 @@ class PostsListing(adminviews.Listing):
 
     def order_query(self, query):
         """Sort the query."""
-        return query
+        return query.order_by('created_at')

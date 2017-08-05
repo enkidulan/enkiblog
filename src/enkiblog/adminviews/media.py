@@ -3,6 +3,7 @@ import deform
 from uuid import uuid4
 
 from websauna.system.core.viewconfig import view_overrides
+from websauna.system.crud import listing
 from websauna.system.admin import views as adminviews
 from deform.schema import FileData
 
@@ -73,3 +74,18 @@ class MediaEdit(adminviews.Edit):
         FileUploadTempStore(request=self.request).clear()
 
         return super().save_changes(form, appstruct, obj)
+
+
+@view_overrides(context=MediaAdmin)
+class MediaListing(adminviews.Listing):
+
+    table = listing.Table(
+        columns=[
+            listing.Column("title", "Title"),
+            listing.ControlsColumn(),
+        ]
+    )
+
+    def order_query(self, query):
+        """Sort the query."""
+        return query.order_by('created_at')

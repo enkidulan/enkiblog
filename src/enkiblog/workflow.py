@@ -2,7 +2,7 @@ from pyramid.security import Allow, Everyone, DENY_ALL
 from enkiblog.core.workflow import WorkflowBuilder, State, Transition, P, prop
 
 
-class SimpleWorkflow(WorkflowBuilder):
+class SimpleWorkflow(WorkflowBuilder):  # pylint: disable=too-few-public-methods
     """ Simple workflow with only public/private states """
 
     name = 'simple_publication'

@@ -109,7 +109,7 @@ class Initializer(websauna.system.Initializer):
         self.make_overrides()
 
 
-def main(global_config, **settings):
+def main(global_config, **settings):  # pylint: disable=unused-argument
     init = Initializer(global_config)
     init.run()
     return init.make_wsgi_app()

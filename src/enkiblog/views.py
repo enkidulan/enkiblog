@@ -1,30 +1,28 @@
 import os.path
+
+from pyramid.events import subscriber
 from pyramid.httpexceptions import HTTPFound
 from pyramid.response import Response
 from pyramid.view import view_config
-from sqlalchemy import func, desc, asc, select
-from sqlalchemy.orm import joinedload, subqueryload, load_only, aliased
+from pyramid_layout.panel import panel_config
+from sqlalchemy import func
+from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
+from websauna.system.core.events import InternalServerError
+from websauna.system.core.loggingcapture import get_logging_user_context
 from websauna.system.core.views.notfound import notfound
 
 from enkiblog import models
 
-from pyramid.events import subscriber
-from websauna.system.core.events import InternalServerError
-from websauna.system.core.loggingcapture import get_logging_user_context
-from pyramid_layout.panel import panel_config
-
 
 EMPTY_TUPLE = tuple()
-
-
-_icon = open(os.path.join(os.path.dirname(__file__), 'static', 'favicon.ico'), 'rb').read()
-_fi_response = Response(content_type='image/x-icon', body=_icon)
+_ICON = open(os.path.join(os.path.dirname(__file__), 'static', 'favicon.ico'), 'rb').read()
+_FI_RESPONSE = Response(content_type='image/x-icon', body=_ICON)
 
 
 @view_config(name='favicon.ico')
-def favicon_view(context, request):
-    return _fi_response
+def favicon_view(*_):
+    return _FI_RESPONSE
 
 
 @panel_config('meta_tags', renderer='templates/enkiblog/meta_tags.pt')
@@ -33,18 +31,20 @@ def meta_tags(context, request):
         'tags': ','.join(map(str, getattr(context, 'tags', EMPTY_TUPLE))),
         'title': str(context),
         'description': context.description,
-        'site_name': 'Enkidu\'s Blog',  # XXX: get from settings
+        'site_name': request.registry.settings['websauna.site_name'],
     }
 
 
 @panel_config('recent_items_widget', renderer='templates/enkiblog/listing_items_widget.pt')
-def recent_items_widget(context, request, num=10, title='Recent posts'):
+def recent_items_widget(_, request, num=10, title='Recent posts'):
     posts_query = request.dbsession.query(models.Post).acl_filter(request)
-    items = posts_query\
-        .options(joinedload('tags'))\
-        .order_by(models.Post.published_at.desc())\
-        .limit(num)\
+    items = (
+        posts_query
+        .options(joinedload('tags'))
+        .order_by(models.Post.published_at.desc())
+        .limit(num)
         .all()
+    )
     return {'items': items, 'title': title}
 
 
@@ -61,24 +61,31 @@ def similar_items_widget(context, request, num=10, title='Similar posts'):
     post_uuid = models.Post.uuid.label("post_uuid")
     relevance = func.count(f_post_uuid).label("relevance")
 
-    allowed_to_see_sbr = dbsession.query(models.Post.uuid)\
-        .acl_filter(request)\
+    allowed_to_see_sbr = (
+        dbsession.query(models.Post.uuid)
+        .acl_filter(request)
         .subquery('allowed_to_see_sbr')
+    )
 
-    related_posts_sbr = dbsession.query(f_post_uuid)\
-        .filter(f_tag_uuid.in_(post_tags))\
-        .filter(f_post_uuid == post_uuid)\
-        .filter(f_post_uuid.in_(allowed_to_see_sbr))\
-        .group_by(f_post_uuid)\
-        .order_by(relevance)\
-        .limit(num + 1)\
+    related_posts_sbr = (
+        dbsession.query(f_post_uuid)
+        .filter(f_tag_uuid.in_(post_tags))
+        .filter(f_post_uuid == post_uuid)
+        .filter(f_post_uuid.in_(allowed_to_see_sbr))
+        .group_by(f_post_uuid)
+        .order_by(relevance)
+        .limit(num + 1)
         .subquery('related_posts_sbr')
+    )
 
-    items = dbsession.query(models.Post)\
-        .options(joinedload('tags'))\
-        .filter(models.Post.uuid.in_(related_posts_sbr))\
-        .limit(num + 1)\
+    items = (
+        dbsession
+        .query(models.Post)
+        .options(joinedload('tags'))
+        .filter(models.Post.uuid.in_(related_posts_sbr))
+        .limit(num + 1)
         .all()
+    )
     # TODO: order for showed items is not preserved
 
     # NOTE: checking not-equal outside SQL really gives performance increase
@@ -96,7 +103,7 @@ def notify_raven(event):
 
 
 @view_config(context=NoResultFound)
-def failed_validation(exc, request):
+def failed_validation(_, request):
     return notfound(request)
 
 # TODO: not found return and not raise found leads to different pages - fix that
@@ -107,7 +114,8 @@ class VistorsResources:
         self.request = request
         self.dbsession = request.dbsession
         # self.posts_query = self.dbsession.query(models.Post).filter_by(state='published')
-        # TODO: make it sense to switch to only published posts? ^ make a mark for posts that are not public
+        # TODO: make it sense to switch to only published posts?
+        #       ^ make a mark for posts that are not public
         self.posts_query = self.dbsession.query(models.Post).acl_filter(request)
         # self.posts_query = self.posts_query.order_by(models.Post.published_at.desc())
         # TODO: add test to show only public posts
@@ -126,10 +134,22 @@ class VistorsResources:
         posts_query = self.posts_query.options(joinedload('tags'))
 
         item = posts_query.filter(models.Post.slug == slug).one()
-        prev_item = posts_query.filter(models.Post.published_at > item.published_at).order_by(models.Post.published_at).first()
-        next_item = posts_query.filter(models.Post.published_at < item.published_at).order_by(models.Post.published_at.desc()).first()
+        prev_item = (
+            posts_query
+            .filter(models.Post.published_at > item.published_at)
+            .order_by(models.Post.published_at)
+            .first()
+        )
+        next_item = (
+            posts_query
+            .filter(models.Post.published_at < item.published_at)
+            .order_by(models.Post.published_at.desc())
+            .first()
+        )
 
-        post, slug_prev, slug_next = item, getattr(prev_item, 'slug', None), getattr(next_item, 'slug', None)
+        post, slug_prev, slug_next = (
+            item, getattr(prev_item, 'slug', None), getattr(next_item, 'slug', None)
+        )
 
         return {
             'project': 'enkiblog',
@@ -141,12 +161,12 @@ class VistorsResources:
 
 
 @view_config(route_name='media')
-def media_view(context, request):
+def media_view(_, request):
     query = request.dbsession.query(models.Media).acl_filter(request)
     obj = query.filter_by(slug=request.matchdict["slug"]).one()
     return Response(content_type=obj.mimetype, body=obj.blob)
 
 
 @view_config(route_name="old_post")
-def old_posts_redirect_view(context, request):
+def old_posts_redirect_view(_, request):
     return HTTPFound(request.route_url("post", slug=request.matchdict["slug"]))
