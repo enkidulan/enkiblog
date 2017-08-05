@@ -55,6 +55,7 @@ setup(
             'selenium==2.53.6',
             'testfixtures',
             'boom',
+            'pytest-cov',
         ],
         'dev': ['websauna[dev]'],
         'serving': [
