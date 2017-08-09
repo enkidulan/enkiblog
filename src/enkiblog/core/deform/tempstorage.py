@@ -2,9 +2,10 @@ import os.path
 from uuid import uuid4
 import shutil
 import logging
-log = logging.getLogger(__name__)
 
-_marker = object()
+logger = logging.getLogger(__name__)
+
+_MARKER = object()
 
 
 class FileUploadTempStore(object):
@@ -14,11 +15,12 @@ class FileUploadTempStore(object):
     def __init__(self, request):
         self.tempdir = request.registry.settings['websauna.uploads_tempdir']
         if os.path.os.makedirs(self.tempdir, mode=0o777, exist_ok=True):
-            log.warn("Creating dir: '%s'", self.tempdir)
+            logger.warning("Creating dir: '%s'", self.tempdir)
         self.request = request
         self.session = request.session
 
-    def preview_url(self, uid):
+    def preview_url(self, _uid):
+        # pylint: disable=no-self-use
         return None
 
     def __contains__(self, name):
@@ -30,8 +32,8 @@ class FileUploadTempStore(object):
 
         if stream is not None:
             newdata['randid'] = uuid4().hex
-            fn = os.path.join(self.tempdir, newdata['randid'])
-            shutil.copyfileobj(stream, open(fn, 'wb'))
+            file_name = os.path.join(self.tempdir, newdata['randid'])
+            shutil.copyfileobj(stream, open(file_name, 'wb'))
 
         self._tempstore_set(name, newdata)
 
@@ -44,11 +46,11 @@ class FileUploadTempStore(object):
 
     def clear(self):
         data = self.session.pop('substanced.tempstore', {})
-        for v in data.items():
-            randid = v.get('randid')
-            fn = os.path.join(self.tempdir, randid)
+        for cookie in data.items():
+            randid = cookie.get('randid')
+            file_name = os.path.join(self.tempdir, randid)
             try:
-                os.remove(fn)
+                os.remove(file_name)
             except OSError:
                 pass
 
@@ -64,16 +66,16 @@ class FileUploadTempStore(object):
 
         if randid is not None:
 
-            fn = os.path.join(self.tempdir, randid)
+            file_name = os.path.join(self.tempdir, randid)
             try:
-                newdata['fp'] = open(fn, 'rb')
+                newdata['fp'] = open(file_name, 'rb')
             except IOError:
                 pass
 
         return newdata
 
     def __getitem__(self, name):
-        data = self.get(name, _marker)
-        if data is _marker:
+        data = self.get(name, _MARKER)
+        if data is _MARKER:
             raise KeyError(name)
         return data

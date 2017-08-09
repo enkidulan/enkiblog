@@ -1,32 +1,32 @@
-from repoze.workflow import Workflow
-from inspect import signature
 from collections import namedtuple
+from inspect import signature
+from repoze.workflow import Workflow
 
 
 P = namedtuple('Permission', ('allowance', 'agents', 'actions'))
 
 
-def prop(prop):
+def prop(attr):
     def getter(instance):
-        return getattr(instance, prop)
+        return getattr(instance, attr)
     return getter
 
 
-class PropsProxy:
+class PropsProxy:  # pylint: disable=too-few-public-methods
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
 
 
-class State(PropsProxy):
+class State(PropsProxy):  # pylint: disable=too-few-public-methods
     pass
 
 
-class Transition(PropsProxy):
+class Transition(PropsProxy):  # pylint: disable=too-few-public-methods
     pass
 
 
-class WorkflowBuilder:
+class WorkflowBuilder:  # pylint: disable=too-few-public-methods
     __baseclass = Workflow
     states = None  # NOTE: hack to make pyling happy... Crap, that is shitty!
 

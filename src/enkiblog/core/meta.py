@@ -1,15 +1,18 @@
 from functools import partial
+
+import sqlalchemy as sa
 from sqlalchemy.orm import Query
 from sqlalchemy.orm import sessionmaker
+
 from enkiblog.workflow import P, Allow
-import sqlalchemy as sa
+
 InstrumentedAttribute = sa.orm.attributes.InstrumentedAttribute
 
 
 def resolve_callable_props(context, permission):
-
+    # TODO: move to workflow?
     agents = permission.agents
-    for i in range(10):
+    for _ in range(10):
         if not callable(agents):
             break
         agents = agents(context)
@@ -20,6 +23,7 @@ def resolve_callable_props(context, permission):
 
 
 def get_allowance_permissions_per_state(context, request):
+    # pylint: disable=invalid-name
     workflow = request.workflow
     resolwer = partial(resolve_callable_props, context)
     for state in workflow.state_info(context, request):
@@ -30,6 +34,7 @@ def get_allowance_permissions_per_state(context, request):
 
 
 def get_relational_and_principale_states(allowance_per_state, actions):
+    # pylint: disable=invalid-name
     allowing_states_and_agents = [
         (state, perm.agents)
         for state, perm in allowance_per_state
@@ -43,7 +48,7 @@ def get_relational_and_principale_states(allowance_per_state, actions):
             (relational_states
              if isinstance(agent, InstrumentedAttribute) else
              principale_states
-             ).append((state, agent))
+            ).append((state, agent))
     return relational_states, principale_states
 
 

@@ -3,11 +3,12 @@ from enkiblog.core.testing.navigator import Navigatable
 
 
 def convert(name):
-    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+    klass_name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', klass_name).lower()
 
 
 class SiteNode(Navigatable):
+    # pylint: disable=abstract-method
     name = None
     nodes = None
 
@@ -38,7 +39,7 @@ class SiteRoot(SiteNode):
 
 class AdminMenu(SiteNode):
 
-    def is_current_context(self, navigator, timeout=None, obj=None):
+    def is_current_context(self, navigator, obj=None, timeout=None):
         return navigator.browser.is_element_present_by_css("#admin-main", wait_time=timeout)
 
     def navigate(self, navigator, obj=None):
@@ -47,13 +48,14 @@ class AdminMenu(SiteNode):
 
 class LoginForm(SiteNode):
 
-    def is_current_context(self, navigator, timeout=None, obj=None):
+    def is_current_context(self, navigator, obj=None, timeout=None):
         return navigator.browser.is_element_present_by_css("#login-form", wait_time=timeout)
 
     def navigate(self, navigator, obj=None):
         navigator.browser.find_by_css("#nav-sign-in").click()
 
     def submit(self, navigator, data, obj=None):
+        # pylint: disable=protected-access,unused-argument
 
         user = data['user']
         navigator.browser.fill("username", user.email)
@@ -63,10 +65,12 @@ class LoginForm(SiteNode):
         assert self.is_user_loged_in(navigator, user)
 
     def is_user_loged_in(self, navigator, user):
+        # pylint: disable=unused-argument,no-self-use
         return navigator.browser.is_element_present_by_css("#nav-logout")
 
 
 class CRUDSiteNode(SiteNode):
+    # pylint: disable=abstract-method
 
     def __init__(self, crud_base):
         super().__init__()
@@ -90,7 +94,7 @@ class CRUD:
 
     class ListingPage(CRUDSiteNode):  # duplicates AdminMenu for simlicity sake
 
-        def is_current_context(self, navigator, timeout=None, obj=None):
+        def is_current_context(self, navigator, obj=None, timeout=None):
             return navigator.browser.is_text_present("All %s" % self.plural, wait_time=timeout)
 
         def navigate(self, navigator, obj=None):
@@ -98,7 +102,7 @@ class CRUD:
 
     class AddPage(CRUDSiteNode):
 
-        def is_current_context(self, navigator, timeout=None, obj=None):
+        def is_current_context(self, navigator, obj=None, timeout=None):
             return navigator.browser.is_text_present("Add new %s" % self.single, wait_time=timeout)
 
         def navigate(self, navigator, obj=None):
@@ -107,7 +111,7 @@ class CRUD:
     class EditPage(CRUDSiteNode):
 
         # TODO: rename method
-        def is_current_context(self, navigator, timeout=None, obj=None):
+        def is_current_context(self, navigator, obj=None, timeout=None):
             return navigator.browser.is_text_present("Editing #%s" % obj.title, wait_time=timeout)
 
         def navigate(self, navigator, obj=None):
@@ -117,7 +121,7 @@ class CRUD:
 
         check_success_message = "Item added"
 
-        def is_current_context(self, navigator, timeout=None, obj=None):
+        def is_current_context(self, navigator, obj=None, timeout=None):
             return navigator.browser.is_text_present("Add new %s" % self.single, wait_time=timeout)
 
         def navigate(self, navigator, obj=None):
@@ -132,25 +136,29 @@ class CRUD:
             self.submit_form(navigator)
 
         def submit_form(self, navigator):  # TODO: naming is not good at all
+            # pylint: disable=no-self-use
             navigator.browser.find_by_name("add").click()
 
         def check_success(self, navigator, data, obj=None):
-
-            self.crud_base.check_success_add_form(navigator.browser, data, self.check_success_message)
+            # pylint: disable=unused-argument
+            self.crud_base.check_success_add_form(
+                navigator.browser, data, self.check_success_message)
 
         def check_validation_error(self, navigator, data, obj=None):
+            # pylint: disable=unused-argument,no-self-use
             assert navigator.browser.is_text_present("There was a problem with your submission")
 
     class EditForm(AddForm):
         check_success_message = "Changes saved"
 
-        def is_current_context(self, navigator, timeout=None, obj=None):
+        def is_current_context(self, navigator, obj=None, timeout=None):
             return navigator.browser.is_text_present("Editing #%s" % obj.title, wait_time=timeout)
 
         def submit_form(self, navigator):  # TODO: naming is not good at all
             navigator.browser.find_by_name("save").click()
 
     def constructor(self):
+        # pylint: disable=no-member
         crud_listing = self.ListingPage(crud_base=self)
         crud_listing.add(self.AddPage(crud_base=self))
         crud_listing.add_page.add(self.AddForm(crud_base=self))

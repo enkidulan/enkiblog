@@ -1,7 +1,8 @@
+# pylint: disable=too-few-public-methods
 from collections import namedtuple
 import factory
-from pyramid.threadlocal import get_current_registry
 
+from pyramid.threadlocal import get_current_registry
 from websauna.system.user import models as ws_models
 from websauna.system.user.interfaces import IPasswordHasher
 from websauna.utils.time import now
@@ -14,7 +15,7 @@ class DBSessionProxy:
         return getattr(self.session, attr)
 
 
-db_session_proxy = DBSessionProxy()
+DB_SESSION_PROXY = DBSessionProxy()
 
 
 def hash_password(password):
@@ -26,7 +27,7 @@ def hash_password(password):
 
 
 def ensure_admin_group_returned():
-    admin_group = db_session_proxy.query(ws_models.Group).filter_by(
+    admin_group = DB_SESSION_PROXY.query(ws_models.Group).filter_by(
         name=ws_models.Group.DEFAULT_ADMIN_GROUP_NAME).first()
     if admin_group is None:
         admin_group = GroupFactory(name=ws_models.Group.DEFAULT_ADMIN_GROUP_NAME)
@@ -36,12 +37,14 @@ def ensure_admin_group_returned():
 class BaseFactory(factory.alchemy.SQLAlchemyModelFactory):
 
     class Meta:
-        sqlalchemy_session = db_session_proxy
+        sqlalchemy_session = DB_SESSION_PROXY
         force_flush = True
         abstract = True
 
     @classmethod
     def _prepare(cls, create, **kwargs):
+        # ???: fuck, what it does
+        # pylint: disable=protected-access
         excluded = {k: w for k, w in kwargs.items() if k in cls._meta.exclude}
         obj = super()._prepare(create, **kwargs)
         obj._fb_excluded = namedtuple('excluded', excluded)(**excluded)

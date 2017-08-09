@@ -1,16 +1,15 @@
-import factory
+import os.path
 from random import randint
 from uuid import uuid4
 
+import factory
 from websauna.utils.time import now
 
 from enkiblog import models
 from enkiblog.core.utils import slugify
+from enkiblog.core.testing.fakefactory import BaseFactory, DB_SESSION_PROXY
 
-import os.path
-
-from enkiblog.core.testing.fakefactory import BaseFactory, db_session_proxy
-
+# pylint: disable=unused-wildcard-import
 # NOTE: HACK to have all factories in one fixture
 # ???: Do I need it to have all factories in one fixture?
 from enkiblog.core.testing.fakefactory import *
@@ -24,7 +23,7 @@ class BasePostFactory(BaseFactory):
     description = factory.Faker('text')
     body = factory.Faker('text')
     slug = factory.LazyAttribute(
-        lambda obj: slugify(obj.title, models.Post.slug, db_session_proxy))
+        lambda obj: slugify(obj.title, models.Post.slug, DB_SESSION_PROXY))
     tags = factory.LazyFunction(lambda: [TagFactory() for i in range(randint(1, 6))])
 
 

@@ -1,24 +1,24 @@
-import colander
-import deform
 from uuid import uuid4
 
+import colander
+import deform
+from deform.schema import FileData
 from websauna.system.core.viewconfig import view_overrides
 from websauna.system.crud import listing
 from websauna.system.admin import views as adminviews
-from deform.schema import FileData
+from websauna.system.crud.formgenerator import SQLAlchemyFormGenerator
 
 from enkiblog.admins import MediaAdmin
-from websauna.system.crud.formgenerator import SQLAlchemyFormGenerator
 from enkiblog.core.deform.tempstorage import FileUploadTempStore
 
 
 @colander.deferred
-def deferred_file_upload_widget(node, kw):
+def deferred_file_upload_widget(_node, kw):
     tmpstore = FileUploadTempStore(request=kw['request'])
     return deform.widget.FileUploadWidget(tmpstore)
 
 
-fields = (
+FIELDS = (
     colander.SchemaNode(
         colander.String(),
         name='description',
@@ -41,7 +41,7 @@ def marshal_appstruct_for_file_data(appstruct, field='blob'):
 @view_overrides(context=MediaAdmin)
 class MediaAdd(adminviews.Add):
 
-    form_generator = SQLAlchemyFormGenerator(includes=fields)
+    form_generator = SQLAlchemyFormGenerator(includes=FIELDS)
 
     def build_object(self, form, appstruct):
 
@@ -53,7 +53,7 @@ class MediaAdd(adminviews.Add):
 
 @view_overrides(context=MediaAdmin.Resource)
 class MediaEdit(adminviews.Edit):
-    form_generator = SQLAlchemyFormGenerator(includes=list(fields) + ['state'])
+    form_generator = SQLAlchemyFormGenerator(includes=list(FIELDS) + ['state'])
 
     def get_appstruct(self, form, obj):
         """Turn the object to form editable format."""
@@ -68,7 +68,6 @@ class MediaEdit(adminviews.Edit):
 
     def save_changes(self, form: deform.Form, appstruct: dict, obj: object):
         # TODO: do not ovveride slug
-
         marshal_appstruct_for_file_data(appstruct)
         appstruct['author'] = self.request.user
         FileUploadTempStore(request=self.request).clear()
@@ -80,12 +79,11 @@ class MediaEdit(adminviews.Edit):
 class MediaListing(adminviews.Listing):
 
     table = listing.Table(
-        columns=[
+        columns=(
             listing.Column("title", "Title"),
             listing.ControlsColumn(),
-        ]
+        )
     )
 
     def order_query(self, query):
-        """Sort the query."""
         return query.order_by('created_at')

@@ -15,5 +15,4 @@ class TagsListing(adminviews.Listing):
     )
 
     def order_query(self, query):
-        """Sort the query."""
         return query.order_by('title')

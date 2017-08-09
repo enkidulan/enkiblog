@@ -1,7 +1,8 @@
-from websauna.system.http.static import StaticAssetPolicy
 from pyramid.static import QueryStringConstantCacheBuster
+from websauna.system.http.static import StaticAssetPolicy
 
 
+# pylint: disable=too-few-public-methods
 class RevisionBasedStaticAssetPolicy(StaticAssetPolicy):
 
     def __init__(self, revision, *args, **kwargs):

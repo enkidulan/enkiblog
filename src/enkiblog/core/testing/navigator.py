@@ -19,6 +19,7 @@ class Navigator:
     def navigate(self, page, check_if_navigated=True, obj=None):
         if self.user:
             self.ensure_user_is_logged_in()
+        # pylint: disable=protected-access
         page._navigate(navigator=self, check_if_navigated=check_if_navigated, obj=obj)
         return page
 
@@ -43,11 +44,13 @@ class Navigatable:
 
     parent = None
 
-    def is_current_context(self, navigator, timeout=0.1):
-        raise
+    def is_current_context(self, navigator, obj=None, timeout=None):
+        # pylint: disable=unused-argument, no-self-use
+        raise NotImplementedError()
 
-    def navigate(self, navigator):
-        raise
+    def navigate(self, navigator, obj):
+        # pylint: disable=unused-argument, no-self-use
+        raise NotImplementedError()
 
     def _navigate(self, navigator, check_if_navigated=True, obj=None):
         # if self.is_current_context(navigator, timeout=0.1):

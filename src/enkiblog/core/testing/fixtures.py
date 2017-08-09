@@ -1,5 +1,6 @@
-import pytest
 from functools import partial
+
+import pytest
 import transaction
 
 from enkiblog.core.testing.navigator import Navigator
@@ -10,11 +11,11 @@ from enkiblog.core.testing.site import site_constructor
 def base_fakefactory(dbsession):
     # TODO: Make thread-safe
     from enkiblog.core.testing import fakefactory
-    fakefactory.db_session_proxy.session = dbsession
+    fakefactory.DB_SESSION_PROXY.session = dbsession
     try:
         yield fakefactory
     finally:
-        fakefactory.db_session_proxy.session = None
+        fakefactory.DB_SESSION_PROXY.session = None
 
 
 @pytest.fixture()
