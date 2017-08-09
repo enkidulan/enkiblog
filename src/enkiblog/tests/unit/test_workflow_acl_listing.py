@@ -1,15 +1,17 @@
-import transaction
 from itertools import chain
+
+import transaction
 from testfixtures import compare as _base_compare
 
 # TODO: move to integrational tests?
 
 
-def compare(a, b):
+def compare(a, b):  # pylint: disable=invalid-name
     _base_compare(sorted(repr(i) for i in a), sorted(repr(i) for i in b))
 
 
 def test_public_state_listing(fakefactory, dbsession, request):
+    # pylint: disable=too-many-locals
 
     from enkiblog.models import Post
     from enkiblog.workflow import get_worflow
@@ -18,8 +20,11 @@ def test_public_state_listing(fakefactory, dbsession, request):
         user = fakefactory.UserFactory()
 
         user_public_posts = fakefactory.PostFactory.create_batch(3, author=user, state='public')
-        user_private_posts = fakefactory.PostFactory.create_batch(3, author=user, state='private')  # noise objects
-        second_user_private_posts = fakefactory.PostFactory.create_batch(3, author=fakefactory.UserFactory(), state='private')  # noise objects
+
+        # noise objects
+        user_private_posts = fakefactory.PostFactory.create_batch(3, author=user, state='private')
+        second_user_private_posts = fakefactory.PostFactory.create_batch(
+            3, author=fakefactory.UserFactory(), state='private')
 
         dbsession.expunge_all()
 
@@ -29,7 +34,8 @@ def test_public_state_listing(fakefactory, dbsession, request):
         request.registry = request
         request.workflow = get_worflow(request)
         return dbsession.query(Post).acl_filter(request, actions=actions)
-        # return Post.acl_aware_listing_query(dbsession, effective_principals, actions, user=user).all()
+        # return Post.acl_aware_listing_query(
+        #      dbsession, effective_principals, actions, user=user).all()
 
     def get_posts_for_managing(*effective_principals, user=None):
         return get_posts(effective_principals=effective_principals, actions=['edit'], user=user)
@@ -50,7 +56,9 @@ def test_public_state_listing(fakefactory, dbsession, request):
     compare(author_manage_posts, chain(user_public_posts, user_private_posts))
 
     admin_view_posts = get_posts_for_viewing('system.Everyone', 'group:admin')
-    compare(admin_view_posts, chain(user_public_posts, user_private_posts, second_user_private_posts))
+    compare(admin_view_posts, chain(
+        user_public_posts, user_private_posts, second_user_private_posts))
 
     admin_manage_posts = get_posts_for_managing('system.Everyone', 'group:admin')
-    compare(admin_manage_posts, chain(user_public_posts, user_private_posts, second_user_private_posts))
+    compare(admin_manage_posts, chain(
+        user_public_posts, user_private_posts, second_user_private_posts))

@@ -1,5 +1,6 @@
-import pytest
+# pylint: disable=redefined-outer-name
 import os.path
+import pytest
 
 
 @pytest.fixture()
@@ -9,7 +10,7 @@ def media_crud_tests(dbsession, fakefactory, site, navigator, admin_user):
         fakefactory.MediaFactory, site.admin_menu.media, navigator, dbsession, admin_user)
 
 
-def test_create(media_crud_tests, fakefactory, dbsession):
+def test_create(media_crud_tests):
 
     media_crud_tests.create(
         fields=("blob", "description", "title"),
@@ -17,7 +18,7 @@ def test_create(media_crud_tests, fakefactory, dbsession):
     )
 
 
-def test_edit(media_crud_tests, fakefactory, dbsession):
+def test_edit(media_crud_tests):
 
     media_crud_tests.edit(
         fields=(

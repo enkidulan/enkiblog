@@ -3,16 +3,17 @@ import pytest
 
 @pytest.fixture()
 def fakefactory(base_fakefactory):
-    # TODO: Make thread-safe
+    # pylint: disable=redefined-outer-name, unused-argument
+    # TODO: Make thread-safe, refactor
     from . import fakefactory
-    return fakefactory
+    base_fakefactory.__dict__.update(fakefactory.__dict__)
+    return base_fakefactory
 
 
 @pytest.fixture()
 def site(base_site):
-    from enkiblog.tests.site import (
-        post, media, tag)
-
+    # pylint: disable=redefined-outer-name
+    from enkiblog.tests.site import post, media, tag
     site = base_site
     site.add(post.Post)
     site.admin_menu.add(post.PostCRUD().constructor())

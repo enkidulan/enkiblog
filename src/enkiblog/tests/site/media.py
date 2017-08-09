@@ -2,6 +2,7 @@ from enkiblog.core.testing.site import CRUD
 
 
 class MediaCRUD(CRUD):
+    # pylint: disable=no-self-use, abstract-method
 
     listing_page_name = 'media'
     entity_plural = 'media'

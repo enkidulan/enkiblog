@@ -1,3 +1,4 @@
+# pylint: disable=invalid-name, too-many-arguments
 from datetime import timedelta
 import transaction
 
@@ -6,7 +7,7 @@ def test_on_post_page_user_sees_all_info(
         browser, site, navigator, fakefactory, dbsession):
 
     with transaction.manager:
-        fakefactory.PostFactory.create_batch(2)
+        fakefactory.PostFactory.create_batch(4)
         post = fakefactory.PostFactory()
         dbsession.expunge_all()
 
@@ -33,12 +34,13 @@ def test_user_doesnt_see_not_published_posts(
     assert not browser.url.endswith(post.slug)
 
     # post is not accessible by url
-    browser.visit(web_server + '/programming/' + post.slug)  # XXX: redesign url making func, currently is inflexible
+    # XXX: redesign url making func, currently is inflexible
+    browser.visit(web_server + '/programming/' + post.slug)
     assert browser.is_text_present('Not found')
 
 
 def test_user_can_navigate_by_paginator_between_posts(
-        web_server, browser, site, navigator, fakefactory, dbsession):
+        browser, site, navigator, fakefactory, dbsession):
 
     with transaction.manager:
         posts = fakefactory.PostFactory.create_batch(3)

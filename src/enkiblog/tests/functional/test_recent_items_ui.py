@@ -1,5 +1,7 @@
+# pylint: disable=invalid-name, too-many-arguments
 import transaction
 from .common import check_if_widget_itmes_present
+
 
 def test_on_recent_posts_widget_user_sees_ordered_published_items(
         browser, web_server, site, navigator, fakefactory, dbsession):
@@ -15,7 +17,7 @@ def test_on_recent_posts_widget_user_sees_ordered_published_items(
 
 
 def test_on_recent_posts_widget_user_doesnt_see_not_published_posts(
-        web_server, browser, site, navigator, fakefactory, dbsession):
+        browser, site, navigator, fakefactory, dbsession):
 
     with transaction.manager:
         post = fakefactory.PostFactory()

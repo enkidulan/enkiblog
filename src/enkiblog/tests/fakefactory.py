@@ -1,3 +1,4 @@
+# pylint: disable=too-few-public-methods
 import os.path
 from random import randint
 from uuid import uuid4
@@ -9,10 +10,13 @@ from enkiblog import models
 from enkiblog.core.utils import slugify
 from enkiblog.core.testing.fakefactory import BaseFactory, DB_SESSION_PROXY
 
-# pylint: disable=unused-wildcard-import
-# NOTE: HACK to have all factories in one fixture
-# ???: Do I need it to have all factories in one fixture?
-from enkiblog.core.testing.fakefactory import *
+
+class TagFactory(BaseFactory):
+    class Meta:
+        model = models.Tag
+
+    # title = factory.Faker('word')
+    title = factory.LazyAttribute(lambda obj: str(uuid4().hex))  # XXX: !!! see previous
 
 
 class BasePostFactory(BaseFactory):
@@ -30,14 +34,6 @@ class BasePostFactory(BaseFactory):
 class PostFactory(BasePostFactory):
     state = 'public'
     published_at = factory.LazyAttribute(lambda obj: now())
-
-
-class TagFactory(BaseFactory):
-    class Meta:
-        model = models.Tag
-
-    # title = factory.Faker('word')
-    title = factory.LazyAttribute(lambda obj: str(uuid4().hex))  # XXX: !!! see previous
 
 
 class MediaFactory(BaseFactory):

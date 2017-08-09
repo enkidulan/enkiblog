@@ -1,3 +1,4 @@
+# pylint: disable=no-self-use, abstract-method, too-few-public-methods
 from enkiblog.core.testing.site import CRUD
 
 

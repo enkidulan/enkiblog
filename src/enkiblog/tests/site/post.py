@@ -1,3 +1,4 @@
+# pylint: disable=no-self-use, abstract-method, too-few-public-methods
 from enkiblog.core.testing.site import CRUD
 
 
@@ -23,7 +24,8 @@ class PostCRUD(CRUD):
         browser.execute_script("$('iframe').contents().find('body').text('%s')" % data['body'])
         browser.fill("description", data['description'])
         # adding tags
-        tags_input = browser.find_by_xpath('//select[@name="tags"]/following::input[@type="search"]')[0]
+        tags_input = browser.find_by_xpath(
+            '//select[@name="tags"]/following::input[@type="search"]')[0]
         for tag in data.get('tags', []):
             tags_input.type(tag + '\n')
 

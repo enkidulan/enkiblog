@@ -1,3 +1,4 @@
+# pylint: disable=invalid-name, too-many-arguments
 import transaction
 from .common import check_if_widget_itmes_present
 
@@ -19,7 +20,8 @@ def test_on_similar_posts_widget_user_sees_ordered_published_items(
         dbsession.expunge_all()
 
     navigator().navigate(site)
-    browser.visit(web_server + '/programming/' + post.slug)  # XXX: redesign url making func, currently is inflexible
+    # XXX: redesign url making func, currently is inflexible
+    browser.visit(web_server + '/programming/' + post.slug)
 
     check_if_widget_itmes_present(
         '.similar', browser, similar_posts[:shown_items_number], web_server)
@@ -36,7 +38,8 @@ def test_on_similar_posts_widget_user_doesnt_see_not_published_posts(
         dbsession.expunge_all()
 
     navigator().navigate(site)
-    browser.visit(web_server + '/programming/' + post.slug)  # XXX: redesign url making func, currently is inflexible
+    # XXX: redesign url making func, currently is inflexible
+    browser.visit(web_server + '/programming/' + post.slug)
 
     assert len(browser.find_by_css('.similar .list-group-item')) == 1
     assert browser.find_by_css('.similar .list-group-item-heading').text == similar_post.title

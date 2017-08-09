@@ -6,7 +6,7 @@ def check_if_widget_itmes_present(base_selector, browser, items, web_server):
         assert item.find_by_css('.list-group-item-heading').text == post.title
         for tag in post.tags:
             assert tag.title in item.find_by_css('.list-group-item-text').text
-
+    # pylint: disable=undefined-loop-variable
     # dummy link redirect test
     item.click()  # add some sleep?
     assert browser.url == web_server + '/programming/' + post.slug

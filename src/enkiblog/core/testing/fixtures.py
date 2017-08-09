@@ -11,6 +11,7 @@ from enkiblog.core.testing.site import site_constructor
 def base_fakefactory(dbsession):
     # TODO: Make thread-safe
     from enkiblog.core.testing import fakefactory
+
     fakefactory.DB_SESSION_PROXY.session = dbsession
     try:
         yield fakefactory
