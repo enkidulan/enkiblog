@@ -24,8 +24,8 @@ class BasePostFactory(BaseFactory):
         model = models.Post
 
     title = factory.Faker('catch_phrase')
-    description = factory.Faker('text')
-    body = factory.Faker('text')
+    description = factory.Faker('sentence')
+    body = factory.Faker('text', max_nb_chars=2000)
     slug = factory.LazyAttribute(
         lambda obj: slugify(obj.title, models.Post.slug, DB_SESSION_PROXY))
     tags = factory.LazyFunction(lambda: [TagFactory() for i in range(randint(1, 6))])

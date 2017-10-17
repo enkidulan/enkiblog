@@ -33,9 +33,7 @@ setup(
         'websauna',
         'python-slugify',
         'repoze.workflow',
-        'zc.buildout',
         'babel',
-        'gunicorn',
         'pyramid_raven',
         'pyramid_mako',  # unpinned pyramid_raven dependency
         'pyramid_chameleon',
@@ -43,29 +41,23 @@ setup(
     ],
     extras_require={
         'test': [
+            'websauna[test]',
             'zope.deprecation',
-            'pytest',
-            'pytest-runner',
-            'pytest-splinter',
-            'webtest',
             'pylint',
             'tox',
             'virtualenv',
             'factory_boy',
-            'selenium==2.53.6',
+            'selenium',
             'testfixtures',
             'boom',
-            'pytest-cov',
         ],
-        'dev': ['websauna[dev]'],
+        'dev': [
+            'websauna[dev]',
+            'websauna[utils]'
+        ],
         'serving': [
             'gunicorn',
             'circus',
-            # 'uWSGI',
-        ],
-        'packaging': [
-            'wheel',
-            'pip',
         ],
     },
 

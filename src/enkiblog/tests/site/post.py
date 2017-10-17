@@ -21,20 +21,24 @@ class PostCRUD(CRUD):
 
     def submit_add_form(self, browser, data):
         browser.fill("title", data['title'])
-        browser.execute_script("$('iframe').contents().find('body').text('%s')" % data['body'])
         browser.fill("description", data['description'])
         # adding tags
         tags_input = browser.find_by_xpath(
             '//select[@name="tags"]/following::input[@type="search"]')[0]
         for tag in data.get('tags', []):
             tags_input.type(tag + '\n')
+        iframe_id = 'qwerty'
+        browser.execute_script("$('iframe').attr('id', '%s');" % iframe_id)
+        with browser.get_iframe(iframe_id) as iframe:
+            iframe.find_by_tag('body').type(data['body'])
 
     def check_success_add_form(self, browser, data, check_success_message):
         # After login we see a profile link to our profile
         assert browser.is_text_present(check_success_message)
         assert browser.is_text_present(data['title'])
         assert browser.is_text_present(data['description'])
-        assert browser.is_text_present(data['body'])
+        for text in data['body'].split('\n'):
+            assert browser.is_text_present(text.strip())
 
         for tag in data.get('tags', []):
             assert browser.is_text_present(tag)
