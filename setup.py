@@ -53,7 +53,9 @@ setup(
         ],
         'dev': [
             'websauna[dev]',
-            'websauna[utils]'
+            'websauna[utils]',
+            'ipython',
+            'isort',
         ],
         'serving': [
             'gunicorn',
@@ -65,5 +67,8 @@ setup(
     entry_points="""\
     [paste.app_factory]
     main = enkiblog:main
+
+    [console_scripts]
+    createcontent = enkiblog.scripts.createcontent:main
     """,
 )

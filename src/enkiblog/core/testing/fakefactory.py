@@ -64,7 +64,7 @@ class UserFactory(BaseFactory):
         exclude = ('password',)
 
     class Params:
-        password = factory.Faker('slug')
+        password = 'qwerty'
 
     username = factory.Faker('user_name')
     email = factory.Faker('email')

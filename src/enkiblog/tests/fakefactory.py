@@ -1,12 +1,12 @@
 # pylint: disable=too-few-public-methods
+from enkiblog import models
 import os.path
+from websauna.utils.time import now
 from random import randint
 from uuid import uuid4
 
 import factory
-from websauna.utils.time import now
 
-from enkiblog import models
 from enkiblog.core.utils import slugify
 from enkiblog.core.testing.fakefactory import BaseFactory, DB_SESSION_PROXY
 
@@ -15,7 +15,7 @@ class TagFactory(BaseFactory):
     class Meta:
         model = models.Tag
 
-    # title = factory.Faker('word')
+    # title = factory.Faker('words', )
     title = factory.LazyAttribute(lambda obj: str(uuid4().hex))  # XXX: !!! see previous
 
 
