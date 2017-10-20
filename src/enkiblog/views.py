@@ -103,11 +103,23 @@ def similar_items_widget(context, request, num=10, title='Similar posts'):
         .limit(num + 1)
         .all()
     )
+    related_posts_uuids = [i for i, in related_posts_uuids]
+
+    items = (
+        dbsession
+        .query(models.Post)
+        .options(joinedload('tags'))
+        .filter(models.Post.uuid.in_(related_posts_uuids))
+        .all()
+    )
+    items = tuple(sorted(
+        (i for i in items if i.uuid != post.uuid),
+        key=lambda post: related_posts_uuids.index(post.uuid)))
 
     # NOTE: checking not-equal outside SQL really gives performance increase
-    items = tuple(
-        dbsession.query(models.Post).options(joinedload('tags')).filter(models.Post.uuid == i).one()
-        for i, in related_posts_uuids if i != post.uuid)
+    # items = tuple(
+    #     dbsession.query(models.Post).options(joinedload('tags')).filter(models.Post.uuid == i).one()
+    #     for i, in related_posts_uuids if i != post.uuid)
     return {'items': items[:num], 'title': title}
 
 
