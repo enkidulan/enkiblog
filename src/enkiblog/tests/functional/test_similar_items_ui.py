@@ -1,5 +1,6 @@
 # pylint: disable=invalid-name, too-many-arguments
 import transaction
+import random
 from .common import check_if_widget_itmes_present
 
 
@@ -7,16 +8,17 @@ def test_on_similar_posts_widget_user_sees_ordered_published_items(
         browser, web_server, site, navigator, fakefactory, dbsession):
 
     shown_items_number = 10
-    tags_items_number = shown_items_number + 5
+    tags_items_number = shown_items_number * 3
 
     with transaction.manager:
 
         tags = fakefactory.TagFactory.create_batch(size=tags_items_number)
         post = fakefactory.PostFactory(tags=tags)
-        similar_posts = [
-            fakefactory.PostFactory(tags=tags[:i])
-            for i in range(tags_items_number, 0, -1)]
-        fakefactory.PostFactory.create_batch(size=tags_items_number * 10)  # noise elements
+
+        tags_sets = [tags[i:] for i, _ in enumerate(tags)]
+        random.shuffle(tags_sets)
+        similar_posts = [fakefactory.PostFactory(tags=tag_sets) for tag_sets in tags_sets]
+        similar_posts.sort(key=lambda i: len(i.tags), reverse=True)
         dbsession.expunge_all()
 
     navigator().navigate(site)
