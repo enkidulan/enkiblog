@@ -3,6 +3,10 @@ before_install:
 - openssl aes-256-cbc -K $encrypted_a0a419e2d994_key -iv $encrypted_a0a419e2d994_iv
   -in kittycat.jpg.enc -out kittycat.jpg -d
 - chmod 600 kittycat.jpg
+  - wget https://github.com/mozilla/geckodriver/releases/download/v0.18.0/geckodriver-v0.18.0-linux64.tar.gz
+  - mkdir geckodriver
+  - tar -xzf geckodriver-v0.18.0-linux64.tar.gz -C geckodriver
+  - export PATH=$PATH:$PWD/geckodriver
 python:
 - 3.5
 addons:
