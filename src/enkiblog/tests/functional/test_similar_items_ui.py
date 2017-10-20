@@ -8,23 +8,32 @@ def test_on_similar_posts_widget_user_sees_ordered_published_items(
         browser, web_server, site, navigator, fakefactory, dbsession):
 
     shown_items_number = 10
-    tags_items_number = shown_items_number * 3
+    shared_tags_number = shown_items_number * 3
+    total_tags_number = shared_tags_number * 3
 
     with transaction.manager:
 
-        tags = fakefactory.TagFactory.create_batch(size=tags_items_number)
+        tags = fakefactory.TagFactory.create_batch(size=total_tags_number)
+        random.shuffle(tags)
+
+        tags, noise_tags = tags[:shared_tags_number], tags[shared_tags_number:]
         post = fakefactory.PostFactory(tags=tags)
 
         tags_sets = [tags[i:] for i, _ in enumerate(tags)]
         random.shuffle(tags_sets)
-        similar_posts = [fakefactory.PostFactory(tags=tag_sets) for tag_sets in tags_sets]
+
+        similar_posts = []
+        for tag_sets in tags_sets:
+            fakefactory.PostFactory(tags=random.sample(noise_tags, shown_items_number))
+            post_tags = tag_sets + fakefactory.TagFactory.create_batch(size=shown_items_number)
+            similar_posts.append(fakefactory.PostFactory(tags=random.sample(post_tags, len(post_tags))))
+            fakefactory.PostFactory(tags=random.sample(noise_tags, shown_items_number))
         similar_posts.sort(key=lambda i: len(i.tags), reverse=True)
         dbsession.expunge_all()
 
     navigator().navigate(site)
     # XXX: redesign url making func, currently is inflexible
     browser.visit(web_server + '/programming/' + post.slug)
-
     check_if_widget_itmes_present(
         '.similar', browser, similar_posts[:shown_items_number], web_server)
 

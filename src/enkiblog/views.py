@@ -13,6 +13,7 @@ from websauna.system.core.loggingcapture import get_logging_user_context
 from websauna.system.core.views.notfound import notfound
 
 from enkiblog import models
+from sqlalchemy import desc
 
 
 EMPTY_TUPLE = tuple()
@@ -67,29 +68,46 @@ def similar_items_widget(context, request, num=10, title='Similar posts'):
         .subquery('allowed_to_see_sbr')
     )
 
-    related_posts_sbr = (
+    # related_posts_sbr = (
+    #     dbsession.query(f_post_uuid)
+    #     .filter(f_tag_uuid.in_(post_tags))
+    #     .filter(f_post_uuid == post_uuid)
+    #     .filter(f_post_uuid.in_(allowed_to_see_sbr))
+    #     .group_by(f_post_uuid)
+    #     .order_by(relevance)
+    #     .limit(num + 1)
+    #     .subquery('related_posts_sbr')
+    # )
+
+    # items = (
+    #     dbsession
+    #     .query(models.Post)
+    #     .options(joinedload('tags'))
+    #     .filter(models.Post.uuid.in_(related_posts_sbr))
+    #     .limit(num + 1)
+    #     .all()
+    # )
+    # TODO: order for showed items is not preserved
+
+    # # NOTE: checking not-equal outside SQL really gives performance increase
+    # items = tuple(i for i in items if i.uuid != post.uuid)
+    # return {'items': items[:num], 'title': title}
+
+    related_posts_uuids = (
         dbsession.query(f_post_uuid)
         .filter(f_tag_uuid.in_(post_tags))
         .filter(f_post_uuid == post_uuid)
         .filter(f_post_uuid.in_(allowed_to_see_sbr))
         .group_by(f_post_uuid)
-        .order_by(relevance)
-        .limit(num + 1)
-        .subquery('related_posts_sbr')
-    )
-
-    items = (
-        dbsession
-        .query(models.Post)
-        .options(joinedload('tags'))
-        .filter(models.Post.uuid.in_(related_posts_sbr))
+        .order_by(desc(relevance))
         .limit(num + 1)
         .all()
     )
-    # TODO: order for showed items is not preserved
 
     # NOTE: checking not-equal outside SQL really gives performance increase
-    items = tuple(i for i in items if i.uuid != post.uuid)
+    items = tuple(
+        dbsession.query(models.Post).options(joinedload('tags')).filter(models.Post.uuid == i).one()
+        for i, in related_posts_uuids if i != post.uuid)
     return {'items': items[:num], 'title': title}
 
 
